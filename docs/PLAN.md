@@ -1,6 +1,6 @@
 # Plan de implementación — canchaAbierta
 
-> Estado: **Fase 0 — Bootstrap** (scaffold de código ✅; setup externo pendiente) · Última actualización: 2026-09-29
+> Estado: **Fase 1 — Lectura pública** (código ✅; setup externo de Fase 0 pendiente) · Última actualización: 2026-10-05
 
 ## 0. Índice de documentos
 
@@ -317,15 +317,15 @@ canchaAbierta/
 - [x] Documentación inicial: `README.md`, `AGENTS.md`, `docs/PLAN.md`, `docs/*.md`
 
 ### Fase 1 — Lectura pública
-- [ ] `lib/sheets/client.ts` (auth googleapis) + `lib/sheets/repos/*.ts` con Zod schemas
-- [ ] `app/(public)/canchas/page.tsx` — listado con filtros (server-side via searchParams)
-- [ ] `app/(public)/canchas/[id]/page.tsx` — detalle
-- [ ] `app/(public)/partidos/page.tsx` — listado
-- [ ] `app/(public)/partidos/[id]/page.tsx` — detalle con cupos y precio
-- [ ] `app/api/sheets/revalidate/route.ts` — recibe POST de Apps Script, valida secret, llama `revalidateTag`
-- [ ] `revalidateTag` por hoja
-- [ ] ISR de respaldo (`revalidate = 60`) por si falla el webhook
-- [ ] shadcn/ui inicial + componentes base (Button, Card, Input, Badge)
+- [x] `lib/sheets/client.ts` (auth googleapis) + `lib/sheets/repos/*.ts` con Zod schemas
+- [x] `app/(public)/canchas/page.tsx` — listado con filtros (server-side via searchParams)
+- [x] `app/(public)/canchas/[id]/page.tsx` — detalle
+- [x] `app/(public)/partidos/page.tsx` — listado
+- [x] `app/(public)/partidos/[id]/page.tsx` — detalle con cupos y precio
+- [x] `app/api/sheets/revalidate/route.ts` — recibe POST de Apps Script, valida secret, llama `revalidateTag`
+- [x] `revalidateTag` por hoja
+- [x] ISR de respaldo (`revalidate = 60`) por si falla el webhook
+- [x] shadcn/ui inicial + componentes base (Button, Card, Input, Badge)
 
 ### Fase 2 — Registro e inscripción
 - [ ] `lib/auth/config.ts` — NextAuth v5 con Google provider, callbacks `jwt`/`session` para inyectar `isAdmin`

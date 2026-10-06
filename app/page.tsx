@@ -1,17 +1,25 @@
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+
 export default function HomePage() {
   return (
-    <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-8 px-6 py-16">
+    <main className="mx-auto flex max-w-5xl flex-col gap-8 px-6 py-16">
       <header className="flex flex-col gap-2">
-        <p className="text-sm font-medium tracking-wide text-brand-600 uppercase">
-          canchaAbierta
-        </p>
+        <p className="text-brand-600 text-sm font-medium tracking-wide uppercase">canchaAbierta</p>
         <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
           Encuentra tu partido de pádel o babyfútbol
         </h1>
         <p className="max-w-2xl text-lg text-neutral-600 dark:text-neutral-300">
-          Inscríbete, paga en línea con Flow y juega. Estamos recién partiendo — pronto verás aquí
-          las canchas y partidos disponibles.
+          Inscríbete, paga en línea con Flow y juega. Revisa las canchas y los partidos abiertos.
         </p>
+        <div className="mt-2 flex flex-wrap gap-3">
+          <Button asChild>
+            <Link href="/partidos">Ver partidos</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href="/canchas">Ver canchas</Link>
+          </Button>
+        </div>
       </header>
 
       <section className="grid gap-4 sm:grid-cols-2">

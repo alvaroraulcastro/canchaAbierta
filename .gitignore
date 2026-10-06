@@ -27,6 +27,8 @@ pnpm-debug.log*
 # local env files
 .env*.local
 .env
+client_secret*.json
+service-account.json
 
 # vercel
 .vercel

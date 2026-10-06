@@ -133,7 +133,7 @@ Hay dos formas:
 3. Debería aparecer una nueva ejecución de `onChange` con status "Completada"
 4. Si expandes la ejecución, debería verse el log `revalidate courts: HTTP 200 - ...`
 
-> **El endpoint `/api/sheets/revalidate` aún no existe** en el código (se implementa en Fase 1). Durante el setup inicial verás un error `404` o de fetch — eso es **esperado** hasta que la app esté corriendo.
+> El endpoint `POST /api/sheets/revalidate` ya está implementado. Responde 401 si falta `X-Secret` o no coincide con `SHEETS_REVALIDATE_SECRET`. Apps Script no puede llamar a `localhost`; para probar el trigger usa un túnel HTTPS o un deploy.
 
 ## 6. Variables de entorno que salen de aquí
 
