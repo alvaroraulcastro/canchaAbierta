@@ -45,7 +45,7 @@ export default async function CourtPage({ params }: { params: Promise<{ id: stri
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-6 py-10">
       <p className="text-sm">
-        <Link href="/canchas" className="text-brand-700 hover:underline">
+        <Link href="/canchas" className="text-link hover:underline">
           Canchas
         </Link>
       </p>
@@ -54,7 +54,7 @@ export default async function CourtPage({ params }: { params: Promise<{ id: stri
           <h1 className="text-3xl font-semibold tracking-tight">{court.name}</h1>
           <Badge>{sportLabel(court.sport)}</Badge>
         </div>
-        <p className="text-neutral-600 dark:text-neutral-300">
+        <p className="text-muted">
           {court.venueName}
           {court.venueAddress ? ` · ${court.venueAddress}` : ""}
         </p>
@@ -65,7 +65,7 @@ export default async function CourtPage({ params }: { params: Promise<{ id: stri
       <section className="flex flex-col gap-4">
         <h2 className="text-xl font-semibold">Próximos partidos</h2>
         {matches.length === 0 ? (
-          <p className="text-sm text-neutral-600 dark:text-neutral-300">
+          <p className="text-sm text-muted">
             No hay partidos abiertos en esta cancha.
           </p>
         ) : (

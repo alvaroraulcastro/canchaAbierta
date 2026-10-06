@@ -45,7 +45,7 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-6 py-10">
       <p className="text-sm">
-        <Link href="/partidos" className="text-brand-700 hover:underline">
+        <Link href="/partidos" className="text-link hover:underline">
           Partidos
         </Link>
       </p>
@@ -58,31 +58,29 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
           </Badge>
         </div>
         <p className="text-lg">{formatMatchDateTime(match.dateTime)}</p>
-        <p className="text-neutral-600 dark:text-neutral-300">
+        <p className="text-muted">
           {match.venueName}
           {match.venueAddress ? ` · ${match.venueAddress}` : ""}
         </p>
       </header>
       <section className="grid gap-4 sm:grid-cols-3">
-        <article className="rounded-2xl border border-neutral-200 p-5 dark:border-neutral-800">
-          <h2 className="text-sm text-neutral-500">Precio</h2>
+        <article className="rounded-3xl border border-line bg-brand-100 p-5">
+          <h2 className="text-sm text-muted">Precio</h2>
           <p className="mt-1 text-2xl font-semibold">{formatCLP(match.priceCLP)}</p>
-          <p className="text-sm text-neutral-600 dark:text-neutral-300">por jugador</p>
+          <p className="text-sm text-muted">por jugador</p>
         </article>
-        <article className="rounded-2xl border border-neutral-200 p-5 dark:border-neutral-800">
-          <h2 className="text-sm text-neutral-500">Cupos</h2>
+        <article className="rounded-3xl border border-line bg-card p-5">
+          <h2 className="text-sm text-muted">Cupos</h2>
           <p className="mt-1 text-2xl font-semibold">
             {spotsLabel(match.currentPlayers, match.maxPlayers)}
           </p>
-          <p className="text-sm text-neutral-600 dark:text-neutral-300">
-            {full ? "Sin cupos libres" : `${spotsLeft} libres`}
-          </p>
+          <p className="text-sm text-muted">{full ? "Sin cupos libres" : `${spotsLeft} libres`}</p>
         </article>
-        <article className="rounded-2xl border border-neutral-200 p-5 dark:border-neutral-800">
-          <h2 className="text-sm text-neutral-500">Duración</h2>
+        <article className="rounded-3xl border border-line bg-card p-5">
+          <h2 className="text-sm text-muted">Duración</h2>
           <p className="mt-1 text-2xl font-semibold">{match.durationMin} min</p>
-          <p className="text-sm text-neutral-600 dark:text-neutral-300">
-            <Link href={courtHref(match.courtId)} className="text-brand-700 hover:underline">
+          <p className="text-sm text-muted">
+            <Link href={courtHref(match.courtId)} className="text-link hover:underline">
               Ver cancha
             </Link>
           </p>

@@ -24,7 +24,7 @@ export default async function MatchesPage({
     <main className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-6 py-10">
       <header className="flex flex-col gap-2">
         <h1 className="text-3xl font-semibold tracking-tight">Partidos</h1>
-        <p className="text-neutral-600 dark:text-neutral-300">
+        <p className="text-muted">
           Revisa cupos, horario y precio antes de inscribirte.
         </p>
       </header>
@@ -48,7 +48,7 @@ async function MatchesResults({ filters }: { filters: ReturnType<typeof parseMat
 
   if (matches.length === 0) {
     return (
-      <p className="text-sm text-neutral-600 dark:text-neutral-300">
+      <p className="text-sm text-muted">
         No hay partidos con ese filtro.
       </p>
     );

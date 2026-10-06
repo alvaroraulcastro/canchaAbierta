@@ -13,7 +13,7 @@ export function MatchFilters({ filters }: { filters: MatchesFilters }) {
         <select
           name="sport"
           defaultValue={filters.sport ?? ""}
-          className="h-10 rounded-full border border-neutral-300 bg-white px-4 text-sm dark:border-neutral-700 dark:bg-neutral-900"
+          className="field min-w-40"
         >
           <option value="">Todos</option>
           <option value="padel">Pádel</option>
@@ -25,7 +25,7 @@ export function MatchFilters({ filters }: { filters: MatchesFilters }) {
         <select
           name="cuando"
           defaultValue={filters.cuando}
-          className="h-10 rounded-full border border-neutral-300 bg-white px-4 text-sm dark:border-neutral-700 dark:bg-neutral-900"
+          className="field min-w-40"
         >
           <option value="proximos">Próximos</option>
           <option value="todos">Todos</option>

@@ -16,6 +16,7 @@
 | **[RESEND_SETUP.md](./RESEND_SETUP.md)** | Verificar dominio, crear API key, remitente |
 | **[AUTH_SETUP.md](./AUTH_SETUP.md)** | Auth.js v5 con Google provider + admin allowlist |
 | **[DEPLOY.md](./DEPLOY.md)** | Deploy en Vercel, env vars, KV, dominio custom |
+| **[scripts/setup-sheets.gs](./scripts/setup-sheets.gs)** | Script para el editor de Apps Script: crea las 7 hojas (sin service account) |
 | **[scripts/bootstrap-sheets.mjs](./scripts/bootstrap-sheets.mjs) | Script Node para crear las 7 hojas vía API |
 | **[scripts/apps-script.gs](./scripts/apps-script.gs)** | Código del trigger Apps Script para copiar/pegar |
 
@@ -48,7 +49,7 @@
 Ejecutar en este orden para llegar de cero a "app deployada en Vercel":
 
 1. **[GOOGLE_CLOUD_SETUP.md](./GOOGLE_CLOUD_SETUP.md)** — crear proyecto, habilitar Sheets API, crear service account, crear OAuth client. Sin esto nada funciona.
-2. **[SHEETS_SCHEMA.md](./SHEETS_SCHEMA.md)** — crear las 7 hojas en el workbook (manual o con `docs/scripts/bootstrap-sheets.mjs`).
+2. **[SHEETS_SCHEMA.md](./SHEETS_SCHEMA.md)** — crear las 7 hojas en el workbook (recomendado: pegar `docs/scripts/setup-sheets.gs` en el editor de Apps Script y ejecutar `setupSheets`; alternativas manual o `bootstrap-sheets.mjs`).
 3. Compartir el Sheets con el email del service account (Volver a [GOOGLE_CLOUD_SETUP.md §7](./GOOGLE_CLOUD_SETUP.md)).
 4. **[APPS_SCRIPT_SETUP.md](./APPS_SCRIPT_SETUP.md)** — instalar el trigger `onChange` para sync en tiempo real.
 5. **[AUTH_SETUP.md](./AUTH_SETUP.md)** — preparar config de Auth.js (se implementa en Fase 2 pero las env vars ya están listas).
@@ -279,6 +280,7 @@ canchaAbierta/
 │   ├── AUTH_SETUP.md
 │   ├── DEPLOY.md
 │   └── scripts/
+│       ├── setup-sheets.gs        # crear las 7 hojas desde Apps Script (sin service account)
 │       ├── bootstrap-sheets.mjs  # crear las 7 hojas vía API
 │       └── apps-script.gs        # código del trigger Apps Script
 ├── .env.example
@@ -298,7 +300,7 @@ canchaAbierta/
 ### Fase 0 — Bootstrap
 **Setup externo** (sigue los docs en este orden):
 - [ ] **[GOOGLE_CLOUD_SETUP.md](./GOOGLE_CLOUD_SETUP.md)** — crear proyecto, habilitar Sheets API, crear service account + JSON key, crear OAuth client
-- [ ] **[SHEETS_SCHEMA.md](./SHEETS_SCHEMA.md)** — crear las 7 hojas (manual o con `docs/scripts/bootstrap-sheets.mjs`)
+- [ ] **[SHEETS_SCHEMA.md](./SHEETS_SCHEMA.md)** — crear las 7 hojas (recomendado: `docs/scripts/setup-sheets.gs` vía editor de Apps Script)
 - [ ] Compartir el Sheets con el email del service account
 - [ ] **[APPS_SCRIPT_SETUP.md](./APPS_SCRIPT_SETUP.md)** — instalar el trigger `onChange`
 - [ ] **[AUTH_SETUP.md](./AUTH_SETUP.md)** — preparar env vars de Auth.js (la integración completa es Fase 2)

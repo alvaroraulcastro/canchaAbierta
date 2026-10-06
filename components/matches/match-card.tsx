@@ -14,11 +14,11 @@ export function MatchCard({ match }: { match: MatchView }) {
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <CardTitle>
-              <Link href={matchHref(match.id)} className="hover:text-brand-700">
+              <Link href={matchHref(match.id)} className="hover:text-link">
                 {match.courtName}
               </Link>
             </CardTitle>
-            <p className="text-sm text-neutral-600 dark:text-neutral-300">{match.venueName}</p>
+            <p className="text-sm text-muted">{match.venueName}</p>
           </div>
           <div className="flex gap-2">
             <Badge>{sportLabel(match.sport)}</Badge>

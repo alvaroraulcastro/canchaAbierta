@@ -12,6 +12,8 @@
 
 Borrar el contenido del archivo `Código.gs` por defecto y pegar este código (también disponible en [`docs/scripts/apps-script.gs`](./scripts/apps-script.gs)):
 
+> Si ya ejecutaste `setup-sheets.gs` de [SHEETS_SCHEMA.md](./SHEETS_SCHEMA.md), crea un archivo nuevo (**+** → *Script*) y pega este código ahí, sin borrar el archivo del setup.
+
 ```javascript
 const SHEET_TO_TAG = {
   Venues: "venues",

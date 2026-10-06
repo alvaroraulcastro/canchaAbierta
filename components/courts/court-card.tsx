@@ -15,7 +15,7 @@ export function CourtCard({ court }: { court: CourtView }) {
   return (
     <Card className="overflow-hidden">
       <div
-        className="bg-brand-100 dark:bg-brand-900 h-36 bg-cover bg-center"
+        className="h-36 bg-brand-200 bg-cover bg-center"
         style={
           safePhoto(court.photoUrl)
             ? { backgroundImage: `url("${safePhoto(court.photoUrl)}")` }
@@ -27,17 +27,17 @@ export function CourtCard({ court }: { court: CourtView }) {
       <CardHeader>
         <div className="flex items-start justify-between gap-3">
           <CardTitle>
-            <Link href={courtHref(court.id)} className="hover:text-brand-700">
+            <Link href={courtHref(court.id)} className="hover:text-link">
               {court.name}
             </Link>
           </CardTitle>
           <Badge>{sportLabel(court.sport)}</Badge>
         </div>
-        <p className="text-sm text-neutral-600 dark:text-neutral-300">{court.venueName}</p>
+        <p className="text-sm text-muted">{court.venueName}</p>
       </CardHeader>
       <CardContent className="pt-3">
         <p className="text-sm">{formatCLP(court.priceCLP)} por jugador</p>
-        <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
+        <p className="mt-1 text-sm text-muted">
           {court.capacity} jugadores
         </p>
       </CardContent>
