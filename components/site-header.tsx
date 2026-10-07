@@ -1,11 +1,12 @@
 import Link from "next/link";
+import { AuthMenu } from "@/components/auth-menu";
 
 const links = [
   { href: "/canchas", label: "Canchas" },
   { href: "/partidos", label: "Partidos" },
 ] as const;
 
-export function SiteHeader() {
+export async function SiteHeader() {
   return (
     <header className="sticky top-0 z-20 border-b border-line bg-card/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-6">
@@ -25,6 +26,7 @@ export function SiteHeader() {
               {link.label}
             </Link>
           ))}
+          <AuthMenu />
         </nav>
       </div>
     </header>

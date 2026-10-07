@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { InscribirseForm } from "@/components/inscriptions/inscribirse-form";
 import { SheetsNotice } from "@/components/sheets-notice";
 import { Badge } from "@/components/ui/badge";
+import { auth } from "@/lib/auth/config";
 import { getMatchView } from "@/lib/catalog";
 import { formatCLP, matchStatusLabel, spotsLabel, sportLabel } from "@/lib/format";
 import { courtHref } from "@/lib/routes";
@@ -26,8 +28,15 @@ export async function generateMetadata({
   };
 }
 
-export default async function MatchPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function MatchPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ error?: string }>;
+}) {
   const { id } = await params;
+  const query = await searchParams;
   if (!sheetsConfigured()) {
     return (
       <main className="mx-auto w-full max-w-5xl px-6 py-10">
@@ -36,11 +45,19 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
     );
   }
 
-  const match = await getMatchView(id);
+  const [match, session] = await Promise.all([getMatchView(id), auth()]);
   if (!match) notFound();
 
   const spotsLeft = Math.max(0, match.maxPlayers - match.currentPlayers);
   const full = spotsLeft === 0;
+  const canInscribe =
+    match.status === "open" && (!full || match.allowOverbook);
+  const errorMessage =
+    query.error === "cupo"
+      ? "No quedan cupos disponibles en este partido."
+      : query.error === "partido"
+        ? "Este partido no acepta inscripciones."
+        : null;
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-6 py-10">
@@ -90,6 +107,31 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
         <p className="rounded-2xl bg-amber-50 p-4 text-sm text-amber-950 dark:bg-amber-950 dark:text-amber-50">
           El partido está lleno, pero acepta sobrecupo. El admin debe confirmarlo después del pago.
         </p>
+      ) : null}
+      {errorMessage ? (
+        <p className="rounded-2xl border border-line bg-card p-4 text-sm" role="alert">
+          {errorMessage}
+        </p>
+      ) : null}
+      {match.status === "open" ? (
+        <section className="flex flex-col gap-3 rounded-3xl border border-line bg-card p-6">
+          <h2 className="text-lg font-semibold">Inscripción</h2>
+          {!session?.user ? (
+            <p className="text-sm text-muted">
+              <Link
+                href={`/auth/signin?callbackUrl=${encodeURIComponent(`/partidos/${id}`)}`}
+                className="text-link font-medium hover:underline"
+              >
+                Inicia sesión con Google
+              </Link>{" "}
+              para inscribirte y pagar con Flow.
+            </p>
+          ) : canInscribe ? (
+            <InscribirseForm matchId={id} />
+          ) : (
+            <p className="text-sm text-muted">No hay cupos disponibles.</p>
+          )}
+        </section>
       ) : null}
     </main>
   );
