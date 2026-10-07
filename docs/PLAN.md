@@ -1,6 +1,6 @@
 # Plan de implementación — canchaAbierta
 
-> Estado: **Fase 0 — Bootstrap** (scaffold de código ✅; setup externo pendiente) · Última actualización: 2026-09-29
+> Estado: **Fase 3 — Panel admin** (en curso) · Última actualización: 2026-10-07
 
 ## 0. Índice de documentos
 
@@ -16,6 +16,7 @@
 | **[RESEND_SETUP.md](./RESEND_SETUP.md)** | Verificar dominio, crear API key, remitente |
 | **[AUTH_SETUP.md](./AUTH_SETUP.md)** | Auth.js v5 con Google provider + admin allowlist |
 | **[DEPLOY.md](./DEPLOY.md)** | Deploy en Vercel, env vars, KV, dominio custom |
+| **[scripts/setup-sheets.gs](./scripts/setup-sheets.gs)** | Script para el editor de Apps Script: crea las 7 hojas (sin service account) |
 | **[scripts/bootstrap-sheets.mjs](./scripts/bootstrap-sheets.mjs) | Script Node para crear las 7 hojas vía API |
 | **[scripts/apps-script.gs](./scripts/apps-script.gs)** | Código del trigger Apps Script para copiar/pegar |
 
@@ -48,7 +49,7 @@
 Ejecutar en este orden para llegar de cero a "app deployada en Vercel":
 
 1. **[GOOGLE_CLOUD_SETUP.md](./GOOGLE_CLOUD_SETUP.md)** — crear proyecto, habilitar Sheets API, crear service account, crear OAuth client. Sin esto nada funciona.
-2. **[SHEETS_SCHEMA.md](./SHEETS_SCHEMA.md)** — crear las 7 hojas en el workbook (manual o con `docs/scripts/bootstrap-sheets.mjs`).
+2. **[SHEETS_SCHEMA.md](./SHEETS_SCHEMA.md)** — crear las 7 hojas en el workbook (recomendado: pegar `docs/scripts/setup-sheets.gs` en el editor de Apps Script y ejecutar `setupSheets`; alternativas manual o `bootstrap-sheets.mjs`).
 3. Compartir el Sheets con el email del service account (Volver a [GOOGLE_CLOUD_SETUP.md §7](./GOOGLE_CLOUD_SETUP.md)).
 4. **[APPS_SCRIPT_SETUP.md](./APPS_SCRIPT_SETUP.md)** — instalar el trigger `onChange` para sync en tiempo real.
 5. **[AUTH_SETUP.md](./AUTH_SETUP.md)** — preparar config de Auth.js (se implementa en Fase 2 pero las env vars ya están listas).
@@ -279,6 +280,7 @@ canchaAbierta/
 │   ├── AUTH_SETUP.md
 │   ├── DEPLOY.md
 │   └── scripts/
+│       ├── setup-sheets.gs        # crear las 7 hojas desde Apps Script (sin service account)
 │       ├── bootstrap-sheets.mjs  # crear las 7 hojas vía API
 │       └── apps-script.gs        # código del trigger Apps Script
 ├── .env.example
@@ -297,14 +299,14 @@ canchaAbierta/
 
 ### Fase 0 — Bootstrap
 **Setup externo** (sigue los docs en este orden):
-- [ ] **[GOOGLE_CLOUD_SETUP.md](./GOOGLE_CLOUD_SETUP.md)** — crear proyecto, habilitar Sheets API, crear service account + JSON key, crear OAuth client
-- [ ] **[SHEETS_SCHEMA.md](./SHEETS_SCHEMA.md)** — crear las 7 hojas (manual o con `docs/scripts/bootstrap-sheets.mjs`)
-- [ ] Compartir el Sheets con el email del service account
-- [ ] **[APPS_SCRIPT_SETUP.md](./APPS_SCRIPT_SETUP.md)** — instalar el trigger `onChange`
-- [ ] **[AUTH_SETUP.md](./AUTH_SETUP.md)** — preparar env vars de Auth.js (la integración completa es Fase 2)
-- [ ] **[FLOW_CL_SETUP.md](./FLOW_CL_SETUP.md)** — crear cuenta, obtener API keys sandbox
-- [ ] **[RESEND_SETUP.md](./RESEND_SETUP.md)** — crear cuenta, verificar dominio
-- [ ] **[DEPLOY.md](./DEPLOY.md)** — conectar repo a Vercel, configurar env vars, provisionar KV
+- [x] **[GOOGLE_CLOUD_SETUP.md](./GOOGLE_CLOUD_SETUP.md)** — crear proyecto, habilitar Sheets API, crear service account + JSON key, crear OAuth client
+- [x] **[SHEETS_SCHEMA.md](./SHEETS_SCHEMA.md)** — crear las 7 hojas (recomendado: `docs/scripts/setup-sheets.gs` vía editor de Apps Script)
+- [x] Compartir el Sheets con el email del service account
+- [x] **[APPS_SCRIPT_SETUP.md](./APPS_SCRIPT_SETUP.md)** — instalar el trigger `onChange`
+- [x] **[AUTH_SETUP.md](./AUTH_SETUP.md)** — preparar env vars de Auth.js (la integración completa es Fase 2)
+- [x] **[FLOW_CL_SETUP.md](./FLOW_CL_SETUP.md)** — crear cuenta, obtener API keys sandbox
+- [x] **[RESEND_SETUP.md](./RESEND_SETUP.md)** — crear cuenta, verificar dominio
+- [x] **[DEPLOY.md](./DEPLOY.md)** — conectar repo a Vercel, configurar env vars, provisionar Redis (`KV_REDIS_URL`)
 
 **Setup de código**:
 - [x] `npx create-next-app@latest` con TS + Tailwind + App Router + ESLint (scaffold manual)
@@ -313,31 +315,31 @@ canchaAbierta/
 - [x] `lib/time.ts` con helpers `America/Santiago`
 - [x] `lib/auth/admins.ts` con `isAdminEmail()`
 - [x] `.env.example` con todas las variables documentadas
-- [ ] Conectar repo a Vercel, branch protection en `main`
+- [x] Conectar repo a Vercel, branch protection en `main` (branch protection en GitHub: pendiente manual)
 - [x] Documentación inicial: `README.md`, `AGENTS.md`, `docs/PLAN.md`, `docs/*.md`
 
 ### Fase 1 — Lectura pública
-- [ ] `lib/sheets/client.ts` (auth googleapis) + `lib/sheets/repos/*.ts` con Zod schemas
-- [ ] `app/(public)/canchas/page.tsx` — listado con filtros (server-side via searchParams)
-- [ ] `app/(public)/canchas/[id]/page.tsx` — detalle
-- [ ] `app/(public)/partidos/page.tsx` — listado
-- [ ] `app/(public)/partidos/[id]/page.tsx` — detalle con cupos y precio
-- [ ] `app/api/sheets/revalidate/route.ts` — recibe POST de Apps Script, valida secret, llama `revalidateTag`
-- [ ] `revalidateTag` por hoja
-- [ ] ISR de respaldo (`revalidate = 60`) por si falla el webhook
-- [ ] shadcn/ui inicial + componentes base (Button, Card, Input, Badge)
+- [x] `lib/sheets/client.ts` (auth googleapis) + `lib/sheets/repos/*.ts` con Zod schemas
+- [x] `app/(public)/canchas/page.tsx` — listado con filtros (server-side via searchParams)
+- [x] `app/(public)/canchas/[id]/page.tsx` — detalle
+- [x] `app/(public)/partidos/page.tsx` — listado
+- [x] `app/(public)/partidos/[id]/page.tsx` — detalle con cupos y precio
+- [x] `app/api/sheets/revalidate/route.ts` — recibe POST de Apps Script, valida secret, llama `revalidateTag`
+- [x] `revalidateTag` por hoja
+- [x] ISR de respaldo (`revalidate = 60`) por si falla el webhook
+- [x] shadcn/ui inicial + componentes base (Button, Card, Input, Badge)
 
 ### Fase 2 — Registro e inscripción
-- [ ] `lib/auth/config.ts` — NextAuth v5 con Google provider, callbacks `jwt`/`session` para inyectar `isAdmin`
-- [ ] `app/api/auth/[...nextauth]/route.ts`
-- [ ] `app/(public)/auth/signin/page.tsx`
-- [ ] `middleware.ts` que protege `/admin/*` (admin only) y `/cuenta/*` (logged-in)
-- [ ] `/cuenta/perfil` — React Hook Form + Zod, completa datos faltantes
-- [ ] Server action `updateProfile`
-- [ ] `lib/locks/match-lock.ts` — lock distribuido en KV por `matchId`
-- [ ] `lib/flow/client.ts` — crear intención de pago (firmar params con `FLOW_SECRET_KEY`)
-- [ ] `lib/flow/verify-signature.ts` — validar firma de webhooks
-- [ ] Server action `inscribirse(matchId)`:
+- [x] `lib/auth/config.ts` — NextAuth v5 con Google provider, callbacks `jwt`/`session` para inyectar `isAdmin`
+- [x] `app/api/auth/[...nextauth]/route.ts` — incluye el callback `/api/auth/callback/google`
+- [x] `app/(public)/auth/signin/page.tsx`
+- [x] `middleware.ts` que protege `/admin/*` (admin only) y `/cuenta/*` (logged-in)
+- [x] `/cuenta/perfil` — formulario + Zod, completa datos faltantes
+- [x] Server action `updateProfile`
+- [x] `lib/locks/match-lock.ts` — lock distribuido en Redis por `matchId`
+- [x] `lib/flow/client.ts` — crear intención de pago (`createFlowPayment`) + `getFlowPaymentStatus`
+- [x] `lib/flow/signature.ts` — firmar params y validar firma de webhooks
+- [x] Server action `inscribirse(matchId)`:
   1. lock distribuido en KV por `matchId`
   2. leer Partidos + contar Inscripciones pagadas
   3. si lleno y `!allowOverbook` → rechazar
@@ -345,23 +347,23 @@ canchaAbierta/
   5. crear intención en Flow con `commerceOrder`
   6. escribir Inscripción `pending` en Sheets
   7. devolver `redirectUrl` de Flow
-- [ ] `app/api/flow/webhook/route.ts`:
+- [x] `app/api/flow/webhook/route.ts`:
   1. verificar firma
-  2. dedupe por `token` en KV (TTL 24h)
+  2. dedupe por `token` en Redis (TTL 24h)
   3. actualizar Inscripción a `paid`, incrementar `currentPlayers` en Partidos
   4. si fue sobrecupo → notificar admin
   5. email al jugador + Notificación in-app
-- [ ] `emails/inscription-confirmed.tsx` (React Email)
-- [ ] Página `/cuenta/mis-inscripciones`
-- [ ] Página `/cuenta/notificaciones` (in-app)
+- [x] `emails/inscription-confirmed.tsx` (React Email)
+- [x] Página `/cuenta/mis-inscripciones`
+- [x] Página `/cuenta/notificaciones` (in-app)
 
 ### Fase 3 — Panel admin
-- [ ] CRUD canchas (Server Actions): create/update/delete con `revalidateTag('courts')` + auditoría
-- [ ] CRUD partidos: misma idea + manejo de `allowOverbook` y `requiresExtraConfirmation`
-- [ ] Vista de inscripciones por partido: aprobar/rechazar sobrecupo, marcar asistencia
-- [ ] Botón "cerrar partido" / "cancelar partido" con notificación masiva
-- [ ] `AdminAudit` se escribe en cada mutación (helper en `lib/sheets/repos/audit.ts`)
-- [ ] Listado de jugadores y notificaciones (read-only para empezar)
+- [x] CRUD canchas (Server Actions): create/update/delete con `revalidateTag('courts')` + auditoría
+- [x] CRUD partidos: misma idea + manejo de `allowOverbook` y `requiresExtraConfirmation`
+- [x] Vista de inscripciones por partido: aprobar/rechazar sobrecupo, marcar asistencia
+- [x] Botón "cerrar partido" / "cancelar partido" con notificación masiva
+- [x] `AdminAudit` se escribe en cada mutación (helper en `lib/sheets/repos/audit.ts`)
+- [x] Listado de jugadores y notificaciones (read-only para empezar)
 
 ### Fase 4 — Endurecimiento
 - [ ] Validaciones Zod en todos los inputs (incluidos `searchParams`)

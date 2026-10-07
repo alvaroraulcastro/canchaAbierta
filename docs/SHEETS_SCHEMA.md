@@ -116,27 +116,51 @@ Ejemplo (al crear la cancha):
 
 `before` y `after` son **JSON serializado en string** (Sheets no tiene tipo JSON nativo). El backend los serializa con `JSON.stringify` al escribir y `JSON.parse` al leer.
 
-## Cómo crear las hojas (manual)
+## Cómo crear las hojas
+
+### Opción A — Apps Script (recomendada, sin service account)
 
 1. Abrir https://docs.google.com/spreadsheets/d/`1VsaQwGX8EE_dnBidWfjJjRPxwA4azMRJi-ziOmbjdxM`/edit
+2. Menú **Extensiones** → **Apps Script**
+3. Borrar el archivo `Código.gs` y pegar el contenido de [`scripts/setup-sheets.gs`](./scripts/setup-sheets.gs)
+4. **Guardar** (ícono de disquete o Ctrl+S)
+5. En el selector de funciones elegir `setupSheets` → **Ejecutar**
+6. Aceptar la autorización de Google. Si aparece *"Google no verificó esta app"*: **Avanzado** → **Ir a setup-sheets (no seguro)** → **Permitir**
+7. Revisar la consola de ejecución: debe decir `OK: las 7 hojas del schema de canchaAbierta quedaron listas`
+
+> ⚠ Si más adelante vas a instalar el trigger de revalidate ([APPS_SCRIPT_SETUP.md](./APPS_SCRIPT_SETUP.md)), agrégalo como **archivo nuevo** del mismo proyecto (**+** → *Script*). No sobrescribas `setup-sheets.gs` si vas a volver a ejecutarlo.
+
+La función es **idempotente**: se puede ejecutar cuantas veces se quiera. No duplica hojas ni filas.
+
+Al terminar el documento queda adaptado a la aplicación:
+
+- Las 7 hojas en el orden exacto del modelo de datos, con los encabezados de la fila 1
+- Fila 1 congelada, en negrita y con fondo verde claro
+- Columnas `dateTime`, `createdAt`, `updatedAt` y `timestamp` en formato texto (así los strings ISO 8601 no se convierten en fechas de Sheets)
+- Listas desplegables en las columnas enum (`sport`, `status`, `level`, `paymentStatus`, `type`, `action`, `entity`)
+- Filas de ejemplo de smoke test (una cancha, dos partidos, una inscripción pagada). Para quitarlas, seleccionar las filas 2+ y eliminarlas. Para no insertarlas, cambiar `WITH_EXAMPLES = false` en el script y volver a ejecutar
+- La "Hoja 1" u otras pestañas vacías se eliminan automáticamente
+
+### Opción B — manual
+
+1. Abrir el Sheets
 2. Si existe "Hoja 1", eliminarla (click derecho en la pestaña → Eliminar)
 3. Crear las 7 hojas en el orden indicado (botón **+** abajo a la izquierda)
 4. En cada hoja pegar los headers en la fila 1
-5. Opcional: agregar las filas de ejemplo de arriba para tener datos de smoke test
-6. Opcional: aplicar formato (Congelar fila 1, negrita, colores alternos) — el backend no lo necesita
+5. Opcional: aplicar el formato descrito abajo
 
-## Formato recomendado (opcional pero útil)
+## Formato recomendado (lo aplica la Opción A)
 
-- **Fila 1** (encabezados): negrita, fondo gris claro, **Vista → Congelar → 1 fila**
-- **Columna `dateTime` y `createdAt`**: Formato → Número → Fecha y hora (los valores deben seguir siendo ISO 8601 con offset para que el backend los parsee)
-- **Columna `active`/`allowOverbook`/etc**: el backend espera los strings `TRUE`/`FALSE`. Sheets los guarda como booleanos; al leerlos vía API llegan como `true`/`false` (en minúscula), por lo que el schema Zod debe aceptar ambos.
-- **Validación en `paymentStatus`** (opcional): Datos → Validación de datos → Lista de elementos: `pending,paid,failed,refunded,cancelled`
+- **Fila 1** (encabezados): negrita, fondo verde claro, **Vista → Congelar → 1 fila**
+- **Columnas `dateTime`, `createdAt`, `updatedAt`, `timestamp`**: formato texto. El backend escribe y lee ISO 8601 con offset (ej. `2026-09-30T19:00:00-03:00`); si Sheets las formatea como fecha, el backend igual las parsea (serial → ISO), pero queda más limpio como texto
+- **Columna `active`/`allowOverbook`/etc**: el backend acepta `TRUE`/`FALSE` como string o como booleano de Sheets (schema Zod normaliza ambos)
+- **Validación en `paymentStatus`**: `pending,paid,failed,refunded,cancelled`
 - **Validación en `status` de Partidos**: `open,closed,cancelled,completed`
 - **Validación en `sport`**: `padel,babyfutbol`
 
-## Bootstrap automático (alternativa)
+## Opción C — bootstrap automático con service account
 
-Si prefieres crear las hojas vía script (requiere `googleapis`):
+Si ya tienes el JSON del service account configurado en `.env`, se pueden crear las hojas vía Node:
 
 ```bash
 npm install --save-dev googleapis

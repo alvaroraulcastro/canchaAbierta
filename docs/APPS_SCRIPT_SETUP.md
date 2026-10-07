@@ -12,6 +12,8 @@
 
 Borrar el contenido del archivo `Código.gs` por defecto y pegar este código (también disponible en [`docs/scripts/apps-script.gs`](./scripts/apps-script.gs)):
 
+> Si ya ejecutaste `setup-sheets.gs` de [SHEETS_SCHEMA.md](./SHEETS_SCHEMA.md), crea un archivo nuevo (**+** → *Script*) y pega este código ahí, sin borrar el archivo del setup.
+
 ```javascript
 const SHEET_TO_TAG = {
   Venues: "venues",
@@ -133,7 +135,7 @@ Hay dos formas:
 3. Debería aparecer una nueva ejecución de `onChange` con status "Completada"
 4. Si expandes la ejecución, debería verse el log `revalidate courts: HTTP 200 - ...`
 
-> **El endpoint `/api/sheets/revalidate` aún no existe** en el código (se implementa en Fase 1). Durante el setup inicial verás un error `404` o de fetch — eso es **esperado** hasta que la app esté corriendo.
+> El endpoint `POST /api/sheets/revalidate` ya está implementado. Responde 401 si falta `X-Secret` o no coincide con `SHEETS_REVALIDATE_SECRET`. Apps Script no puede llamar a `localhost`; para probar el trigger usa un túnel HTTPS o un deploy.
 
 ## 6. Variables de entorno que salen de aquí
 
