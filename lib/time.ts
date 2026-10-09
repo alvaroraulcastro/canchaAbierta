@@ -1,3 +1,4 @@
+import { startOfDay } from "date-fns";
 import { formatInTimeZone, fromZonedTime, toZonedTime } from "date-fns-tz";
 import { es } from "date-fns/locale";
 
@@ -30,4 +31,10 @@ export function toSantiago(date: Date | string): Date {
 
 export function fromSantiago(date: Date): Date {
   return fromZonedTime(date, APP_TZ);
+}
+
+export function startOfTodayInSantiagoMs(nowMs = Date.now()): number {
+  const zonedNow = toZonedTime(new Date(nowMs), APP_TZ);
+  const zonedStart = startOfDay(zonedNow);
+  return fromZonedTime(zonedStart, APP_TZ).getTime();
 }

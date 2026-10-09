@@ -2,7 +2,7 @@
 
 import { randomUUID } from "node:crypto";
 import { fromZonedTime } from "date-fns-tz";
-import { revalidateTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getAdminSession } from "@/lib/auth/require-admin";
@@ -82,6 +82,8 @@ export async function createMatch(formData: FormData): Promise<void> {
     revalidateTag(SHEET_TAGS.Partidos);
     revalidateTag(SHEET_TAGS.AdminAudit);
     revalidateTag(matchTag(id));
+    revalidatePath("/partidos");
+    revalidatePath("/canchas");
   } catch (error) {
     rethrowNavigationError(error);
     const message = error instanceof Error ? error.message : "No se pudo crear el partido";
@@ -124,6 +126,9 @@ export async function setMatchStatus(formData: FormData): Promise<void> {
     revalidateTag(SHEET_TAGS.Partidos);
     revalidateTag(SHEET_TAGS.AdminAudit);
     revalidateTag(matchTag(parsed.data.matchId));
+    revalidatePath("/partidos");
+    revalidatePath(`/partidos/${parsed.data.matchId}`);
+    revalidatePath("/canchas");
   } catch (error) {
     rethrowNavigationError(error);
     const message = error instanceof Error ? error.message : "No se pudo actualizar el partido";
