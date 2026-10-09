@@ -4,6 +4,7 @@ import { revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getAdminSession } from "@/lib/auth/require-admin";
+import { rethrowNavigationError } from "@/lib/rethrow-navigation";
 import { appendAuditEntry } from "@/lib/sheets/repos/audit";
 import { deactivateCourt, upsertCourt } from "@/lib/sheets/repos/courts";
 import { getVenue } from "@/lib/sheets/repos/venues";
@@ -76,11 +77,12 @@ export async function saveCourt(formData: FormData): Promise<void> {
     });
     revalidateTag(SHEET_TAGS.Canchas);
     revalidateTag(SHEET_TAGS.AdminAudit);
-    redirect("/admin/canchas?ok=1");
   } catch (error) {
+    rethrowNavigationError(error);
     const message = error instanceof Error ? error.message : "No se pudo guardar la cancha";
     throw new Error(message);
   }
+  redirect("/admin/canchas?ok=1");
 }
 
 export async function deleteCourt(formData: FormData): Promise<void> {
@@ -103,9 +105,10 @@ export async function deleteCourt(formData: FormData): Promise<void> {
     });
     revalidateTag(SHEET_TAGS.Canchas);
     revalidateTag(SHEET_TAGS.AdminAudit);
-    redirect("/admin/canchas?ok=1");
   } catch (error) {
+    rethrowNavigationError(error);
     const message = error instanceof Error ? error.message : "No se pudo desactivar la cancha";
     throw new Error(message);
   }
+  redirect("/admin/canchas?ok=1");
 }
