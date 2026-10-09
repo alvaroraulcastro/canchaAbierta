@@ -8,30 +8,26 @@ import { rethrowNavigationError } from "@/lib/rethrow-navigation";
 import { appendAuditEntry } from "@/lib/sheets/repos/audit";
 import { deactivateCourt, upsertCourt } from "@/lib/sheets/repos/courts";
 import { getVenue } from "@/lib/sheets/repos/venues";
+import { zFormCheckbox, zFormOptionalString, zFormString } from "@/lib/form-data";
 import { SPORT_VALUES } from "@/lib/sheets/schemas";
 import { SHEET_TAGS } from "@/lib/sheets/tags";
 
 const courtFormSchema = z.object({
-  id: z
-    .string()
-    .trim()
-    .min(2)
-    .max(80)
-    .regex(/^[a-z0-9-]+$/, "Usa minúsculas, números y guiones"),
-  venueId: z.string().trim().min(1),
-  name: z.string().trim().min(2).max(120),
+  id: zFormString.pipe(
+    z
+      .string()
+      .min(2)
+      .max(80)
+      .regex(/^[a-z0-9-]+$/, "Usa minúsculas, números y guiones"),
+  ),
+  venueId: zFormString.pipe(z.string().min(1)),
+  name: zFormString.pipe(z.string().min(2).max(120)),
   sport: z.enum(SPORT_VALUES),
   capacity: z.coerce.number().int().min(2).max(30),
   priceCLP: z.coerce.number().int().min(0),
-  photoUrl: z.string().trim().max(500).optional(),
-  active: z
-    .union([z.literal("on"), z.literal("true"), z.literal("false"), z.literal("")])
-    .optional(),
+  photoUrl: zFormOptionalString.pipe(z.string().max(500).optional()),
+  active: zFormCheckbox,
 });
-
-function boolFromForm(value: string | undefined): boolean {
-  return value === "on" || value === "true";
-}
 
 export async function saveCourt(formData: FormData): Promise<void> {
   const admin = await getAdminSession();
@@ -62,7 +58,7 @@ export async function saveCourt(formData: FormData): Promise<void> {
     capacity: parsed.data.capacity,
     priceCLP: parsed.data.priceCLP,
     photoUrl: parsed.data.photoUrl ?? "",
-    active: boolFromForm(parsed.data.active),
+    active: parsed.data.active,
   };
 
   try {
