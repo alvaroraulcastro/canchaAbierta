@@ -14,27 +14,24 @@ import { getCourt } from "@/lib/sheets/repos/courts";
 import { listInscriptionsByMatch } from "@/lib/sheets/repos/inscriptions";
 import { createMatchRow, updateMatchFields } from "@/lib/sheets/repos/matches";
 import { createNotification } from "@/lib/sheets/repos/notifications";
+import { zFormCheckbox, zFormString } from "@/lib/form-data";
 import { MATCH_STATUS_VALUES } from "@/lib/sheets/schemas";
 import { matchTag, SHEET_TAGS } from "@/lib/sheets/tags";
 import { APP_TZ, formatMatchDateTime, isoFromSantiago } from "@/lib/time";
 
 const matchFormSchema = z.object({
-  courtId: z.string().trim().min(1),
-  dateTimeLocal: z.string().trim().min(1),
+  courtId: zFormString.pipe(z.string().min(1, "Elige una cancha")),
+  dateTimeLocal: zFormString.pipe(z.string().min(1, "Indica fecha y hora")),
   durationMin: z.coerce.number().int().min(30).max(240),
   maxPlayers: z.coerce.number().int().min(2).max(30),
-  allowOverbook: z.union([z.literal("on"), z.literal("")]).optional(),
-  requiresExtraConfirmation: z.union([z.literal("on"), z.literal("")]).optional(),
+  allowOverbook: zFormCheckbox,
+  requiresExtraConfirmation: zFormCheckbox,
 });
 
 function parseSantiagoLocal(value: string): string {
   const normalized = value.length === 16 ? `${value}:00` : value;
   const asUtc = fromZonedTime(normalized, APP_TZ);
   return isoFromSantiago(asUtc);
-}
-
-function boolFromForm(value: string | undefined): boolean {
-  return value === "on";
 }
 
 export async function createMatch(formData: FormData): Promise<void> {
@@ -65,8 +62,8 @@ export async function createMatch(formData: FormData): Promise<void> {
     durationMin: parsed.data.durationMin,
     maxPlayers: parsed.data.maxPlayers,
     currentPlayers: 0,
-    allowOverbook: boolFromForm(parsed.data.allowOverbook),
-    requiresExtraConfirmation: boolFromForm(parsed.data.requiresExtraConfirmation),
+    allowOverbook: parsed.data.allowOverbook,
+    requiresExtraConfirmation: parsed.data.requiresExtraConfirmation,
     status: "open" as const,
     createdBy: admin.email,
     createdAt: now,
