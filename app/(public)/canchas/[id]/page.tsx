@@ -6,6 +6,7 @@ import { SheetsNotice } from "@/components/sheets-notice";
 import { Badge } from "@/components/ui/badge";
 import { getCourtView, listMatchViewsByCourt } from "@/lib/catalog";
 import { formatCLP, sportLabel } from "@/lib/format";
+import { parseRouteIdParams } from "@/lib/search-params";
 import { sheetsConfigured } from "@/lib/sheets/client";
 
 export const revalidate = 60;
@@ -26,7 +27,10 @@ export async function generateMetadata({
 }
 
 export default async function CourtPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+  const rawParams = await params;
+  const parsed = parseRouteIdParams(rawParams);
+  if (!parsed) notFound();
+  const id = parsed.id;
   if (!sheetsConfigured()) {
     return (
       <main className="mx-auto w-full max-w-5xl px-6 py-10">

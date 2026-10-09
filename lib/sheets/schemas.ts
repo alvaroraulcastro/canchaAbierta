@@ -1,6 +1,9 @@
 import { fromZonedTime } from "date-fns-tz";
 import { z } from "zod";
+import { createLogger } from "@/lib/logger";
 import { APP_TZ, type Sport } from "@/lib/time";
+
+const logger = createLogger("sheets/schemas");
 
 export const SPORT_VALUES = ["padel", "babyfutbol"] as const satisfies readonly Sport[];
 export const MATCH_STATUS_VALUES = ["open", "closed", "cancelled", "completed"] as const;
@@ -218,7 +221,7 @@ export function parseRows<S extends z.ZodTypeAny>(
     }
   }
   if (skipped > 0) {
-    console.warn(`Se omitieron ${skipped} filas inválidas en ${sheet}`);
+    logger.warn(`Se omitieron ${skipped} filas inválidas en ${sheet}`);
   }
   return parsed;
 }

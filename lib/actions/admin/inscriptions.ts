@@ -5,9 +5,11 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getAdminSession } from "@/lib/auth/require-admin";
 import { sendEmail } from "@/lib/email/client";
+import { createLogger } from "@/lib/logger";
 import { appendAuditEntry } from "@/lib/sheets/repos/audit";
 import { getInscription, setInscriptionAdminApproved } from "@/lib/sheets/repos/inscriptions";
 import { createNotification } from "@/lib/sheets/repos/notifications";
+import { parseAttendanceFormData } from "@/lib/search-params";
 import { inscriptionsTag, SHEET_TAGS } from "@/lib/sheets/tags";
 
 const overbookSchema = z.object({
@@ -58,7 +60,10 @@ export async function decideOverbook(formData: FormData): Promise<void> {
       try {
         await sendEmail({ to: before.playerEmail, subject: title, text: `${body} ${link}` });
       } catch (error) {
-        console.error("No se pudo enviar email de sobrecupo", error);
+        createLogger("admin/inscriptions").error("No se pudo enviar email de sobrecupo", error, {
+          playerEmail: before.playerEmail,
+          inscriptionId: parsed.data.inscriptionId,
+        });
       }
     }
     revalidateTag(SHEET_TAGS.Inscripciones);
@@ -77,12 +82,11 @@ export async function markAttendance(formData: FormData): Promise<void> {
   const admin = await getAdminSession();
   if (!admin) throw new Error("No autorizado");
 
-  const inscriptionId = String(formData.get("inscriptionId") ?? "").trim();
-  const matchId = String(formData.get("matchId") ?? "").trim();
-  if (!inscriptionId || !matchId) throw new Error("Datos incompletos");
+  const data = parseAttendanceFormData(formData);
+  if (!data) throw new Error("Datos incompletos");
 
-  const inscription = await getInscription(inscriptionId);
-  if (!inscription || inscription.matchId !== matchId) {
+  const inscription = await getInscription(data.inscriptionId);
+  if (!inscription || inscription.matchId !== data.matchId) {
     throw new Error("Inscripción no encontrada");
   }
   if (inscription.paymentStatus !== "paid") {
@@ -93,10 +97,10 @@ export async function markAttendance(formData: FormData): Promise<void> {
     adminEmail: admin.email,
     action: "update",
     entity: "inscription",
-    entityId: inscriptionId,
+    entityId: data.inscriptionId,
     before: null,
     after: { attendanceMarked: true, at: new Date().toISOString() },
   });
   revalidateTag(SHEET_TAGS.AdminAudit);
-  redirect(`/admin/partidos/${encodeURIComponent(matchId)}/inscripciones?ok=1`);
+  redirect(`/admin/partidos/${encodeURIComponent(data.matchId)}/inscripciones?ok=1`);
 }

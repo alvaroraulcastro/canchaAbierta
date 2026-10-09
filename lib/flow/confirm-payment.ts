@@ -3,12 +3,15 @@ import { renderInscriptionConfirmedEmail } from "@/emails/inscription-confirmed"
 import { sendEmail } from "@/lib/email/client";
 import { getMatchView } from "@/lib/catalog";
 import { getFlowPaymentStatus } from "@/lib/flow/client";
+import { createLogger } from "@/lib/logger";
 import { getPlayer } from "@/lib/sheets/repos/players";
 import { syncInscriptionPayment } from "@/lib/sheets/repos/inscriptions";
 import { incrementMatchPlayers } from "@/lib/sheets/repos/matches";
 import { createNotification } from "@/lib/sheets/repos/notifications";
 import type { PaymentStatus } from "@/lib/sheets/schemas";
 import { formatMatchDateTime } from "@/lib/time";
+
+const logger = createLogger("flow/confirm-payment");
 
 const FLOW_TO_PAYMENT: Record<number, PaymentStatus> = {
   1: "pending",
@@ -74,7 +77,7 @@ async function notifyOverbookAdmins(matchId: string, playerEmail: string): Promi
         link,
       });
     } catch (error) {
-      console.error("No se pudo notificar al admin", error);
+      logger.error("No se pudo notificar al admin", error, { adminEmail, matchId });
     }
   }
 }
@@ -92,7 +95,7 @@ async function notifyPaid(email: string, matchId: string): Promise<void> {
       link,
     });
   } catch (error) {
-    console.error("No se pudo crear la notificación in-app", error);
+    logger.error("No se pudo crear la notificación in-app", error, { email, matchId });
   }
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim() ?? "";
   const match = await getMatchView(matchId);
@@ -114,12 +117,12 @@ async function notifyPaid(email: string, matchId: string): Promise<void> {
         matchPath: link,
       });
     } catch (error) {
-      console.error("No se pudo renderizar el email", error);
+      logger.error("No se pudo renderizar el email", error, { email, matchId });
     }
   }
   try {
     await sendEmail({ to: email, subject: title, text, html });
   } catch (error) {
-    console.error("No se pudo enviar el email de pago", error);
+    logger.error("No se pudo enviar el email de pago", error, { email, matchId });
   }
 }

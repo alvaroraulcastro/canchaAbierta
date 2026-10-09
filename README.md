@@ -2,7 +2,28 @@
 
 Plataforma web para encontrar jugadores y unirse a partidos de **pádel** y **babyfútbol** en Chile. Los jugadores se autentican con Google, se inscriben a un partido y pagan con **Flow.cl** (Transbank Webpay). El admin gestiona canchas, partidos y sobrecupos desde un panel propio.
 
-> **Estado actual: Fase 2 — Registro e inscripción (en curso).** Ver checklist completo en [`docs/PLAN.md`](./docs/PLAN.md) §8.
+> **Estado actual: Fase 4 — Endurecimiento (en curso).** Validaciones, errores, logging y accesibilidad completados. Pendientes: tests E2E, pase a producción. Ver checklist en [`docs/PLAN.md`](./docs/PLAN.md) §8.
+
+---
+
+## Objetivos del proyecto
+
+### Visión del producto
+Crear la plataforma de referencia en Chile para que jugadores de pádel y babyfútbol encuentren partidos, se inscriban y paguen online, eliminando la fricción de los métodos tradicionales (WhatsApp, efectivo, transferencia manual).
+
+### Objetivos de negocio
+1. **Reducir fricción de inscripción**: de 5-10 minutos (coordinación manual) a 2 minutos (self-service)
+2. **Garantizar cobro automático**: eliminación de morosidad y seguimiento manual de pagos
+3. **Gestión eficiente para admin**: panel centralizado para crear partidos, gestionar sobrecupos y ver auditoría
+4. **Escalabilidad técnica**: arquitectura serverless en Vercel con concurrencia manejada via locks distribuidos
+5. **Confianza y transparencia**: datos en Google Sheets (accesibles para admin) + auditoría de todos los cambios
+
+### Objetivos técnicos
+- **Zero DB infrastructure**: persistencia en Google Sheets (ya usado por el admin) + Redis para locks/idempotencia
+- **Real-time sync**: cambios del admin reflejados en <5 segundos via Apps Script webhook
+- **Pago seguro**: integración con Flow.cl (estándar chileno) con webhooks firmados HMAC
+- **Concurrencia segura**: lock distribuido por `matchId` para evitar dobles inscripciones
+- **Developer experience**: TypeScript estricto, Server Components por defecto, validación con Zod en cliente y servidor
 
 ---
 
@@ -73,28 +94,49 @@ Plataforma web para encontrar jugadores y unirse a partidos de **pádel** y **ba
 
 ## Features
 
-### Implementadas (Fase 0 + 1 + 2)
+### Implementadas (Fase 0 + 1 + 2 + 3 + partial 4)
 
+**Plataforma base (Fase 0)**
 - **Bootstrap**: scaffold Next.js + TS estricto + Tailwind + alias `@/` + Prettier + ESLint
 - **Sheets**: cliente googleapis con JWT, 7 hojas definidas con Zod, normalizacion de booleanos (`TRUE`/`true`), serial de fecha → ISO
-- **Listados publicos**: `/canchas` y `/partidos` con filtros via `searchParams`, server-side, cache por tag
-- **Detalle**: `/canchas/[id]` y `/partidos/[id]` con cupos, precio y reglas
 - **Sync en tiempo real**: Apps Script `onChange` → POST firmado → `revalidateTag` por hoja
 - **ISR de respaldo**: `revalidate = 60` por si falla el webhook de Apps Script
 - **Auth Google**: Auth.js v5, callback `jwt` inyecta `isAdmin`
 - **Middleware**: protege `/cuenta/*` (logged-in) y `/admin/*` (admin-only)
+
+**Lectura publica (Fase 1)**
+- **Listados**: `/canchas` y `/partidos` con filtros via `searchParams`, server-side, cache por tag
+- **Detalle**: `/canchas/[id]` y `/partidos/[id]` con cupos, precio y reglas
+- **shadcn/ui**: componentes base (Button, Card, Input, Badge)
+
+**Registro e inscripcion (Fase 2)**
 - **Perfil**: `/cuenta/perfil` con formulario + Zod; persistido en hoja `Jugadores`
 - **Inscripcion + pago**: server action `inscribirse()` con lock por `matchId` → crea intencion Flow → acta pagar `pending` en Sheets → redirect a Flow
 - **Webhook Flow**: valida firma HMAC, dedupe en Redis (TTL 24h), confirma pago, incrementa `currentPlayers`, notifica
-- **Sobrepaso con confirmacion**: si partido lleno y `allowOverbook=true`, la inscripcion queda `overbookRequested=true` hasta aprobacion del admin
+- **Sobrecupo con confirmacion**: si partido lleno y `allowOverbook=true`, la inscripcion queda `overbookRequested=true` hasta aprobacion del admin
 - **Paginas cuenta**: `/cuenta/mis-inscripciones`, `/cuenta/notificaciones`
+- **Emails**: plantilla React Email `inscription-confirmed.tsx`
 
-### Pendientes (Fase 2 + 4)
+**Panel admin (Fase 3)**
+- **CRUD canchas**: create/update/delete con `revalidateTag('courts')` + auditoría
+- **CRUD partidos**: misma idea + manejo de `allowOverbook` y `requiresExtraConfirmation`
+- **Gestion de inscripciones**: aprobar/rechazar sobrecupo, marcar asistencia
+- **Control de partidos**: cerrar/cancelar partido con notificacion masiva
+- **Audit log**: `AdminAudit` se escribe en cada mutacion
+- **Listados admin**: jugadores y notificaciones (read-only)
 
-- Plantilla React Email `inscription-confirmed.tsx` (Fase 2)
-- Panel admin completo (Fase 3): CRUD canchas, CRUD partidos, gestion de sobrecupos, audit log
-- Tests E2E con Playwright (Fase 4)
-- Pase de Flow sandbox a produccion (Fase 4)
+**Endurecimiento parcial (Fase 4)**
+- **Validaciones Zod**: todos los inputs validados (searchParams, forms, route handlers)
+- **Error boundaries**: `error.tsx` y `not-found.tsx` por segmento (public, account, admin, global)
+- **Loading states**: `loading.tsx` con skeletons para canchas, partidos, cuenta, admin
+- **Logging estructurado**: `lib/logger.ts` con JSON logs, reemplaza `console.error` dispersos
+- **Accesibilidad**: skip link, focus-visible, aria-labels en formularios y nav, contraste WCAG AA
+
+### Pendientes (Fase 4)
+
+- Tests E2E con Playwright: flujo critico de inscripcion + pago (mockeando Flow)
+- Pase de Flow sandbox a produccion
+- Verificacion de Google OAuth para produccion (pantalla de consentimiento)
 
 ---
 
@@ -348,8 +390,8 @@ Ver detalle completo en [`AGENTS.md`](./AGENTS.md). Resumen:
 
 ## Estado del proyecto
 
-**Fase 2 — Registro e inscripcion (en curso).** Falta un solo item de esta fase: la plantilla React Email `inscription-confirmed.tsx`.
+**Fase 4 — Endurecimiento (en curso).** Completados: validaciones Zod en todos los inputs, error boundaries por segmento, loading states, logging estructurado, y accesibilidad.
 
-Siguiente bloque: **Fase 3 — Panel admin** (CRUDs + audit + gestion de sobrecupos).
+**Pendiente:** tests E2E con Playwright, pase de Flow sandbox a producción, y verificación de Google OAuth.
 
 Detalles, fechas y checklist completo en [`docs/PLAN.md`](./docs/PLAN.md) §8.

@@ -5,6 +5,7 @@ import { listCourtViews } from "@/lib/catalog";
 import { listVenues } from "@/lib/sheets/repos/venues";
 import { getCourt } from "@/lib/sheets/repos/courts";
 import { formatCLP, sportLabel } from "@/lib/format";
+import { parseAdminCourtsSearchParams, type SearchParams } from "@/lib/search-params";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,11 +15,11 @@ export const metadata: Metadata = {
 };
 
 type PageProps = {
-  searchParams: Promise<{ edit?: string; ok?: string; error?: string }>;
+  searchParams: Promise<SearchParams>;
 };
 
 export default async function AdminCourtsPage({ searchParams }: PageProps) {
-  const sp = await searchParams;
+  const sp = parseAdminCourtsSearchParams(await searchParams);
   const [courts, venues, editing] = await Promise.all([
     listCourtViews(),
     listVenues(),

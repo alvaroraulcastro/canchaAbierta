@@ -17,13 +17,17 @@ export async function AuthMenu() {
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <nav aria-label="Cuenta" className="flex items-center gap-2">
       {session.user.isAdmin ? (
         <Link href="/admin" className="rounded-full px-3 py-1.5 text-sm font-medium hover:bg-brand-200">
           Admin
         </Link>
       ) : null}
-      <Link href="/cuenta" className="max-w-40 truncate rounded-full px-3 py-1.5 text-sm hover:bg-brand-200">
+      <Link
+        href="/cuenta"
+        className="max-w-40 truncate rounded-full px-3 py-1.5 text-sm hover:bg-brand-200"
+        aria-label={`Mi cuenta: ${session.user.name ?? session.user.email}`}
+      >
         {session.user.name ?? session.user.email}
       </Link>
       <form action={signOutUser}>
@@ -31,6 +35,6 @@ export async function AuthMenu() {
           Salir
         </Button>
       </form>
-    </div>
+    </nav>
   );
 }
