@@ -5,6 +5,7 @@ import { MatchCard } from "@/components/matches/match-card";
 import { SheetsNotice } from "@/components/sheets-notice";
 import { Badge } from "@/components/ui/badge";
 import { getCourtView, listMatchViewsByCourt } from "@/lib/catalog";
+import { isMatchOpenForPublicSignup } from "@/lib/matches/public-list";
 import { formatCLP, sportLabel } from "@/lib/format";
 import { parseRouteIdParams } from "@/lib/search-params";
 import { sheetsConfigured } from "@/lib/sheets/client";
@@ -42,8 +43,8 @@ export default async function CourtPage({ params }: { params: Promise<{ id: stri
   const court = await getCourtView(id);
   if (!court || !court.active) notFound();
 
-  const matches = (await listMatchViewsByCourt(court.id)).filter(
-    (match) => match.status === "open" && Date.parse(match.dateTime) >= Date.now(),
+  const matches = (await listMatchViewsByCourt(court.id)).filter((match) =>
+    isMatchOpenForPublicSignup(match),
   );
 
   return (

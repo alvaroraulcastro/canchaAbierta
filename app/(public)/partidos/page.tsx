@@ -3,6 +3,7 @@ import { MatchCard } from "@/components/matches/match-card";
 import { MatchFilters } from "@/components/matches/match-filters";
 import { SheetsNotice } from "@/components/sheets-notice";
 import { listMatchViews } from "@/lib/catalog";
+import { isMatchVisibleInPublicList } from "@/lib/matches/public-list";
 import { sheetsConfigured } from "@/lib/sheets/client";
 import { parseMatchesFilters, type SearchParams } from "@/lib/search-params";
 
@@ -37,14 +38,9 @@ export default async function MatchesPage({
 async function MatchesResults({ filters }: { filters: ReturnType<typeof parseMatchesFilters> }) {
   if (!sheetsConfigured()) return <SheetsNotice />;
 
-  const now = Date.now();
-  const matches = (await listMatchViews()).filter((match) => {
-    if (filters.sport && match.sport !== filters.sport) return false;
-    if (filters.cuando === "proximos") {
-      return match.status === "open" && Date.parse(match.dateTime) >= now;
-    }
-    return true;
-  });
+  const matches = (await listMatchViews()).filter((match) =>
+    isMatchVisibleInPublicList(match, filters),
+  );
 
   if (matches.length === 0) {
     return (
