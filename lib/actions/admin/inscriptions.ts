@@ -4,6 +4,7 @@ import { revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getAdminSession } from "@/lib/auth/require-admin";
+import { rethrowNavigationError } from "@/lib/rethrow-navigation";
 import { sendEmail } from "@/lib/email/client";
 import { createLogger } from "@/lib/logger";
 import { appendAuditEntry } from "@/lib/sheets/repos/audit";
@@ -69,13 +70,12 @@ export async function decideOverbook(formData: FormData): Promise<void> {
     revalidateTag(SHEET_TAGS.Inscripciones);
     revalidateTag(SHEET_TAGS.AdminAudit);
     revalidateTag(inscriptionsTag(parsed.data.matchId));
-    redirect(
-      `/admin/partidos/${encodeURIComponent(parsed.data.matchId)}/inscripciones?ok=1`,
-    );
   } catch (error) {
+    rethrowNavigationError(error);
     const message = error instanceof Error ? error.message : "No se pudo actualizar la inscripción";
     throw new Error(message);
   }
+  redirect(`/admin/partidos/${encodeURIComponent(parsed.data.matchId)}/inscripciones?ok=1`);
 }
 
 export async function markAttendance(formData: FormData): Promise<void> {

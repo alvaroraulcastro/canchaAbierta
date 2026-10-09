@@ -6,6 +6,7 @@ import { revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getAdminSession } from "@/lib/auth/require-admin";
+import { rethrowNavigationError } from "@/lib/rethrow-navigation";
 import { sendEmail } from "@/lib/email/client";
 import { createLogger } from "@/lib/logger";
 import { appendAuditEntry } from "@/lib/sheets/repos/audit";
@@ -84,11 +85,12 @@ export async function createMatch(formData: FormData): Promise<void> {
     revalidateTag(SHEET_TAGS.Partidos);
     revalidateTag(SHEET_TAGS.AdminAudit);
     revalidateTag(matchTag(id));
-    redirect("/admin/partidos?ok=1");
   } catch (error) {
+    rethrowNavigationError(error);
     const message = error instanceof Error ? error.message : "No se pudo crear el partido";
     throw new Error(message);
   }
+  redirect("/admin/partidos?ok=1");
 }
 
 const statusSchema = z.object({
@@ -125,11 +127,12 @@ export async function setMatchStatus(formData: FormData): Promise<void> {
     revalidateTag(SHEET_TAGS.Partidos);
     revalidateTag(SHEET_TAGS.AdminAudit);
     revalidateTag(matchTag(parsed.data.matchId));
-    redirect(`/admin/partidos?ok=1`);
   } catch (error) {
+    rethrowNavigationError(error);
     const message = error instanceof Error ? error.message : "No se pudo actualizar el partido";
     throw new Error(message);
   }
+  redirect(`/admin/partidos?ok=1`);
 }
 
 async function notifyMatchCancelled(matchId: string, dateTimeIso: string): Promise<void> {
