@@ -4,6 +4,7 @@ import { decideOverbook, markAttendance } from "@/lib/actions/admin/inscriptions
 import { getMatchView } from "@/lib/catalog";
 import { listInscriptionsByMatch } from "@/lib/sheets/repos/inscriptions";
 import { paymentStatusLabel } from "@/lib/format";
+import { parseAdminOkSearchParams, parseRouteIdParams } from "@/lib/search-params";
 import { formatMatchDateTime } from "@/lib/time";
 import { Button } from "@/components/ui/button";
 
@@ -13,12 +14,15 @@ export const metadata: Metadata = {
 
 type PageProps = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ ok?: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export default async function AdminMatchInscriptionsPage({ params, searchParams }: PageProps) {
-  const { id } = await params;
-  const sp = await searchParams;
+  const rawParams = await params;
+  const parsed = parseRouteIdParams(rawParams);
+  if (!parsed) notFound();
+  const id = parsed.id;
+  const sp = parseAdminOkSearchParams(await searchParams);
   const match = await getMatchView(id);
   if (!match) notFound();
 

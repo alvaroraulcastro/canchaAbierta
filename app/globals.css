@@ -63,3 +63,8 @@ body {
   background: var(--color-brand-300);
   color: var(--color-brand-950);
 }
+
+:focus-visible {
+  outline: 2px solid var(--color-link);
+  outline-offset: 2px;
+}

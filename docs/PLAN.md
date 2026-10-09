@@ -1,6 +1,6 @@
 # Plan de implementación — canchaAbierta
 
-> Estado: **Fase 3 — Panel admin** (en curso) · Última actualización: 2026-10-07
+> Estado: **Fase 4 — Endurecimiento (en curso).** Completados: validaciones Zod, error boundaries, loading states, logging estructurado, accesibilidad. Pendientes: tests E2E Playwright, pase a producción Flow, verificación OAuth. · Última actualización: 2026-10-08
 
 ## 0. Índice de documentos
 
@@ -29,13 +29,29 @@
 - **Stack**: Next.js 15 (App Router) + TypeScript + Tailwind + shadcn/ui + Auth.js v5 + Google Sheets API + Flow.cl + Resend + Vercel KV
 - **Moneda / idioma / TZ**: CLP / es-CL / `America/Santiago`
 
+## 1.1 Objetivos del proyecto
+
+### Objetivos de negocio
+1. **Reducir fricción de inscripción**: de 5-10 minutos (coordinación manual) a 2 minutos (self-service)
+2. **Garantizar cobro automático**: eliminación de morosidad y seguimiento manual de pagos
+3. **Gestión eficiente para admin**: panel centralizado para crear partidos, gestionar sobrecupos y ver auditoría
+4. **Escalabilidad técnica**: arquitectura serverless en Vercel con concurrencia manejada via locks distribuidos
+5. **Confianza y transparencia**: datos en Google Sheets (accesibles para admin) + auditoría de todos los cambios
+
+### Objetivos técnicos
+- **Zero DB infrastructure**: persistencia en Google Sheets (ya usado por el admin) + Redis para locks/idempotencia
+- **Real-time sync**: cambios del admin reflejados en <5 segundos via Apps Script webhook
+- **Pago seguro**: integración con Flow.cl (estándar chileno) con webhooks firmados HMAC
+- **Concurrencia segura**: lock distribuido por `matchId` para evitar dobles inscripciones
+- **Developer experience**: TypeScript estricto, Server Components por defecto, validación con Zod en cliente y servidor
+
 ## 2. Recursos compartidos
 
 | Recurso | Valor |
 |---|---|
 | Google Sheets ID | `1VsaQwGX8EE_dnBidWfjJjRPxwA4azMRJi-ziOmbjdxM` |
 | URL Sheets | https://docs.google.com/spreadsheets/d/1VsaQwGX8EE_dnBidWfjJjRPxwA4azMRJi-ziOmbjdxM/edit?usp=sharing |
-| Sheets (estado actual) | Una hoja "Hoja 1" sin contenido; **aún no se han creado las 7 hojas del §5** |
+| Sheets (estado actual) | 7 hojas creadas y operativas (Venues, Canchas, Partidos, Jugadores, Inscripciones, Notificaciones, AdminAudit) |
 | Owner del Sheets | TBD (owner de la cuenta Google del admin) |
 | Service account email | TBD (se crea en [GOOGLE_CLOUD_SETUP.md §6](./GOOGLE_CLOUD_SETUP.md)) |
 | Proyecto GCP | TBD (`cancha-abierta` recomendado) |
@@ -81,7 +97,7 @@ Ver archivo `.env.example` para la lista completa y descripciones inline. **17 v
 | Apps Script | `SHEETS_REVALIDATE_SECRET` |
 | Flow.cl | `FLOW_API_KEY`, `FLOW_SECRET_KEY`, `FLOW_BASE_URL`, `FLOW_WEBHOOK_URL` |
 | Resend | `RESEND_API_KEY`, `RESEND_FROM_EMAIL` |
-| Vercel KV | `KV_URL`, `KV_REST_API_URL`, `KV_REST_API_TOKEN` |
+| Vercel KV | `KV_REDIS_URL` |
 
 ## 3. Stack técnico
 
@@ -366,11 +382,11 @@ canchaAbierta/
 - [x] Listado de jugadores y notificaciones (read-only para empezar)
 
 ### Fase 4 — Endurecimiento
-- [ ] Validaciones Zod en todos los inputs (incluidos `searchParams`)
-- [ ] Manejo de errores con `error.tsx` y `not-found.tsx` por segmento
-- [ ] Logging estructurado (sin secretos)
+- [x] Validaciones Zod en todos los inputs (incluidos `searchParams`)
+- [x] Manejo de errores con `error.tsx` y `not-found.tsx` por segmento
+- [x] Logging estructurado (sin secretos)
 - [ ] Tests E2E Playwright: flujo crítico de inscripción + pago (mockeando Flow)
-- [ ] Accesibilidad: revisar contraste, navegación por teclado, aria labels
+- [x] Accesibilidad: revisar contraste, navegación por teclado, aria labels
 - [ ] Pasaje a producción de Flow.cl (sandbox → prod)
 - [ ] Verificación de Google OAuth para producción (pantalla de consentimiento)
 

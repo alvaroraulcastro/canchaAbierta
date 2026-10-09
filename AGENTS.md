@@ -15,7 +15,7 @@
 9. [Modelo de Sheets (resumen)](#9-modelo-de-sheets-resumen)
 10. [Flujos criticos](#10-flujos-criticos)
 11. [Estado del proyecto](#11-estado-del-proyecto)
-12. [Como trabajar en este repo](#12-como-trabajar-en-trabajar-en-este-repo)
+12. [Como trabajar en este repo](#12-como-trabajar-en-este-repo)
 
 ---
 
@@ -23,7 +23,25 @@
 
 App web chilena para que jugadores se inscriban y paguen partidos de **padel** y **babyfutbol**, y para que el admin gestione canchas y partidos.
 
-**Caracteristicas distintivas** (las que no se pueden cambiar sin reconsiderar toda la arquitectura):
+### Objetivos del producto
+
+**Vision**: Ser la plataforma de referencia en Chile para inscripcion y pago online de partidos de padel y babyfutbol, eliminando la friccion de los metodos tradicionales (WhatsApp, efectivo, transferencia manual).
+
+**Objetivos de negocio**:
+1. **Reducir friccion de inscripcion**: de 5-10 minutos (coordinacion manual) a 2 minutos (self-service)
+2. **Garantizar cobro automatico**: eliminacion de morosidad y seguimiento manual de pagos
+3. **Gestion eficiente para admin**: panel centralizado para crear partidos, gestionar sobrecupos y ver auditoria
+4. **Escalabilidad tecnica**: arquitectura serverless en Vercel con concurrencia manejada via locks distribuidos
+5. **Confianza y transparencia**: datos en Google Sheets (accesibles para admin) + auditoria de todos los cambios
+
+**Objetivos tecnicos**:
+- **Zero DB infrastructure**: persistencia en Google Sheets (ya usado por el admin) + Redis para locks/idempotencia
+- **Real-time sync**: cambios del admin reflejados en <5 segundos via Apps Script webhook
+- **Pago seguro**: integracion con Flow.cl (estandar chileno) con webhooks firmados HMAC
+- **Concurrencia segura**: lock distribuido por `matchId` para evitar dobles inscripciones
+- **Developer experience**: TypeScript estricto, Server Components por defecto, validacion con Zod en cliente y servidor
+
+### Caracteristicas distintivas (las que no se pueden cambiar sin reconsiderar toda la arquitectura):
 
 - La fuente de datos es un **Google Sheets** compartido. No hay DB tradicional (no Prisma, no Drizzle, no Postgres, no Mongo). El admin edita el Sheets directo o desde el panel admin.
 - Los pagos van por **Flow.cl (Transbank Webpay REST)** con webhooks firmados HMAC.
@@ -311,11 +329,11 @@ Localizado en `app/api/flow/webhook/route.ts`. Pasos:
 
 ---
 
-## 12. Estado del proyecto
+## 11. Estado del proyecto
 
-**Fase 2 — Registro e inscripcion (en curso).** Item pendiente de esta fase: plantilla React Email `inscription-confirmed.tsx`.
+**Fase 4 — Endurecimiento (en curso).** Completados: validaciones Zod en todos los inputs, error boundaries por segmento, loading states, logging estructurado, y accesibilidad.
 
-Siguiente bloque: **Fase 3 — Panel admin** (CRUDs de canchas/partidos, gestion de sobrecupos, audit log). Despues: **Fase 4 — Endurecimiento** (Playwright, accesibilidad, sandbox→prod de Flow).
+**Pendiente:** tests E2E con Playwright, pase de Flow sandbox a producción, y verificación de Google OAuth.
 
 Detalles y checklist completo en [`docs/PLAN.md`](../docs/PLAN.md) §8.
 
@@ -323,7 +341,7 @@ Cuando termines una fase o un item, **marca los checkboxes** en `docs/PLAN.md` y
 
 ---
 
-## 13. Como trabajar en este repo
+## 12. Como trabajar en este repo
 
 1. **Lee `docs/PLAN.md` entero** antes de tocar codigo.
 2. **Lee este `AGENTS.md`** para no romper convenciones.

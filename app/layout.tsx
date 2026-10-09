@@ -25,8 +25,16 @@ export default function RootLayout({
   return (
     <html lang="es-CL" className={outfit.variable}>
       <body className="flex min-h-screen flex-col antialiased">
+        <a
+          href="#main-content"
+          className="sr-only rounded-full bg-brand-300 px-4 py-2 text-sm font-semibold text-brand-950 focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50"
+        >
+          Saltar al contenido
+        </a>
         <SiteHeader />
-        <div className="flex-1">{children}</div>
+        <div id="main-content" className="flex-1">
+          {children}
+        </div>
       </body>
     </html>
   );

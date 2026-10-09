@@ -8,6 +8,7 @@ import { auth } from "@/lib/auth/config";
 import { getMatchView } from "@/lib/catalog";
 import { formatCLP, matchStatusLabel, spotsLabel, sportLabel } from "@/lib/format";
 import { courtHref } from "@/lib/routes";
+import { parseMatchErrorSearchParams, parseRouteIdParams } from "@/lib/search-params";
 import { sheetsConfigured } from "@/lib/sheets/client";
 import { formatMatchDateTime } from "@/lib/time";
 
@@ -33,10 +34,15 @@ export default async function MatchPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const { id } = await params;
-  const query = await searchParams;
+  const rawParams = await params;
+  const parsed = parseRouteIdParams(rawParams);
+  if (!parsed) notFound();
+  const id = parsed.id;
+
+  const query = parseMatchErrorSearchParams(await searchParams);
+
   if (!sheetsConfigured()) {
     return (
       <main className="mx-auto w-full max-w-5xl px-6 py-10">

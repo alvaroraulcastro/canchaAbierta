@@ -4,6 +4,7 @@ import { createMatch, setMatchStatus } from "@/lib/actions/admin/matches";
 import { listMatchViews } from "@/lib/catalog";
 import { listCourts } from "@/lib/sheets/repos/courts";
 import { formatCLP, matchStatusLabel, sportLabel, spotsLabel } from "@/lib/format";
+import { parseAdminOkSearchParams, type SearchParams } from "@/lib/search-params";
 import { formatMatchDateTime } from "@/lib/time";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,11 +15,11 @@ export const metadata: Metadata = {
 };
 
 type PageProps = {
-  searchParams: Promise<{ ok?: string }>;
+  searchParams: Promise<SearchParams>;
 };
 
 export default async function AdminMatchesPage({ searchParams }: PageProps) {
-  const sp = await searchParams;
+  const sp = parseAdminOkSearchParams(await searchParams);
   const [matches, courts] = await Promise.all([listMatchViews(), listCourts()]);
   const activeCourts = courts.filter((court) => court.active);
 

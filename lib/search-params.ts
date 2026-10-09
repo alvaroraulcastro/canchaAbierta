@@ -41,3 +41,68 @@ export function parseMatchesFilters(params: SearchParams): MatchesFilters {
     cuando: cuando.success ? cuando.data : "proximos",
   };
 }
+
+const matchErrorSchema = z.enum(["cupo", "partido", "inscripcion"]);
+
+export type MatchErrorSearchParams = {
+  error?: "cupo" | "partido" | "inscripcion";
+};
+
+export function parseMatchErrorSearchParams(params: SearchParams): MatchErrorSearchParams {
+  const error = matchErrorSchema.safeParse(readSearchParam(params.error));
+  return { error: error.success ? error.data : undefined };
+}
+
+const routeIdSchema = z.string().trim().min(1).max(200);
+
+export type RouteIdParams = {
+  id: string;
+};
+
+export function parseRouteIdParams(params: { id?: unknown }): RouteIdParams | null {
+  const parsed = routeIdSchema.safeParse(params.id);
+  return parsed.success ? { id: parsed.data } : null;
+}
+
+const adminFlagSchema = z.string().trim().max(10).optional();
+
+export type AdminOkSearchParams = {
+  ok?: string;
+};
+
+export function parseAdminOkSearchParams(params: SearchParams): AdminOkSearchParams {
+  const ok = adminFlagSchema.safeParse(readSearchParam(params.ok));
+  return { ok: ok.success ? ok.data : undefined };
+}
+
+export type AdminCourtsSearchParams = {
+  edit?: string;
+  ok?: string;
+  error?: string;
+};
+
+export function parseAdminCourtsSearchParams(params: SearchParams): AdminCourtsSearchParams {
+  const edit = z.string().trim().max(200).optional().safeParse(readSearchParam(params.edit));
+  const ok = adminFlagSchema.safeParse(readSearchParam(params.ok));
+  const error = z.string().trim().max(200).optional().safeParse(readSearchParam(params.error));
+  return {
+    edit: edit.success ? edit.data : undefined,
+    ok: ok.success ? ok.data : undefined,
+    error: error.success ? error.data : undefined,
+  };
+}
+
+const attendanceSchema = z.object({
+  inscriptionId: z.string().trim().min(1),
+  matchId: z.string().trim().min(1),
+});
+
+export type AttendanceFormData = z.infer<typeof attendanceSchema>;
+
+export function parseAttendanceFormData(formData: FormData): AttendanceFormData | null {
+  const parsed = attendanceSchema.safeParse({
+    inscriptionId: formData.get("inscriptionId"),
+    matchId: formData.get("matchId"),
+  });
+  return parsed.success ? parsed.data : null;
+}

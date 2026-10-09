@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getAdminSession } from "@/lib/auth/require-admin";
 import { sendEmail } from "@/lib/email/client";
+import { createLogger } from "@/lib/logger";
 import { appendAuditEntry } from "@/lib/sheets/repos/audit";
 import { getCourt } from "@/lib/sheets/repos/courts";
 import { listInscriptionsByMatch } from "@/lib/sheets/repos/inscriptions";
@@ -152,12 +153,12 @@ async function notifyMatchCancelled(matchId: string, dateTimeIso: string): Promi
         link,
       });
     } catch (error) {
-      console.error("No se pudo notificar cancelación in-app", error);
+      createLogger("admin/matches").error("No se pudo notificar cancelación in-app", error, { matchId });
     }
     try {
       await sendEmail({ to: email, subject: title, text: `${body} ${link}` });
     } catch (error) {
-      console.error("No se pudo enviar email de cancelación", error);
+      createLogger("admin/matches").error("No se pudo enviar email de cancelación", error, { matchId, email });
     }
   }
 }
