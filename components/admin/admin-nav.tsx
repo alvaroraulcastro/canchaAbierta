@@ -8,6 +8,9 @@ const links = [
   { href: "/admin/auditoria", label: "Auditoría" },
 ] as const;
 
+const navLinkClass =
+  "rounded-full border border-line bg-card px-3 py-1.5 font-medium hover:bg-brand-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-surface";
+
 export function AdminNav() {
   return (
     <nav
@@ -15,11 +18,7 @@ export function AdminNav() {
       className="flex flex-wrap gap-2 border-b border-line pb-4 text-sm"
     >
       {links.map((link) => (
-        <Link
-          key={link.href}
-          href={link.href}
-          className="rounded-full border border-line bg-card px-3 py-1.5 font-medium hover:bg-brand-100"
-        >
+        <Link key={link.href} href={link.href} className={navLinkClass}>
           {link.label}
         </Link>
       ))}

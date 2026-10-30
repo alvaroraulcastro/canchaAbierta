@@ -1,3 +1,4 @@
+import { CancelInscriptionForm } from "@/components/inscriptions/cancel-inscription-form";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -6,6 +7,7 @@ import { listMatchViews } from "@/lib/catalog";
 import { syncStalePendingInscriptionsForPlayer } from "@/lib/flow/sync-pending-inscriptions";
 import { formatCLP } from "@/lib/format";
 import { auth } from "@/lib/auth/config";
+import { canPlayerCancelInscription } from "@/lib/inscriptions/cancel-policy";
 import { listInscriptionsByPlayer } from "@/lib/sheets/repos/inscriptions";
 import { parseInscriptionsSearchParams, type SearchParams } from "@/lib/search-params";
 import { formatMatchDateTime } from "@/lib/time";
@@ -50,12 +52,29 @@ export default async function MyInscriptionsPage({ searchParams }: PageProps) {
           Tu cuenta
         </Link>
       </p>
-      <h1 className="text-3xl font-semibold tracking-tight">Mis inscripciones</h1>
-      {sp.showPendingNotice ? (
-        <p className="rounded-xl border border-line bg-brand-50 px-4 py-3 text-sm">
-          Tu pago quedó pendiente. Si ya pagaste en Flow, espera unos minutos o recarga esta página
-          para sincronizar el estado.
-        </p>
+      <h1 className="text-3xl font-semibold tracking-tight text-balance">Mis inscripciones</h1>
+      {(sp.showPendingNotice || sp.showCancelledNotice || sp.cancelError) ? (
+        <div aria-live="polite" className="flex flex-col gap-3">
+          {sp.showPendingNotice ? (
+            <p className="rounded-xl border border-line bg-brand-50 px-4 py-3 text-sm">
+              Tu pago quedó pendiente. Si ya pagaste en Flow, espera unos minutos o recarga esta
+              página para sincronizar el estado.
+            </p>
+          ) : null}
+          {sp.showCancelledNotice ? (
+            <p className="rounded-xl border border-line bg-brand-50 px-4 py-3 text-sm">
+              Tu inscripción fue cancelada. El cupo quedó liberado en el partido.
+            </p>
+          ) : null}
+          {sp.cancelError ? (
+            <p
+              className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+              role="alert"
+            >
+              {sp.cancelError}
+            </p>
+          ) : null}
+        </div>
       ) : null}
       {sorted.length === 0 ? (
         <p className="text-muted">
@@ -68,6 +87,10 @@ export default async function MyInscriptionsPage({ searchParams }: PageProps) {
         <ul className="flex flex-col gap-4">
           {sorted.map((inscription) => {
             const match = matchById.get(inscription.matchId);
+            const cancelPolicy =
+              match && inscription.paymentStatus === "paid"
+                ? canPlayerCancelInscription(match, inscription)
+                : null;
             return (
               <li
                 key={inscription.id}
@@ -97,6 +120,12 @@ export default async function MyInscriptionsPage({ searchParams }: PageProps) {
                   >
                     Ver partido
                   </Link>
+                ) : null}
+                {cancelPolicy?.ok ? (
+                  <CancelInscriptionForm inscriptionId={inscription.id} />
+                ) : null}
+                {cancelPolicy && !cancelPolicy.ok ? (
+                  <p className="mt-3 text-sm text-muted">{cancelPolicy.error}</p>
                 ) : null}
               </li>
             );

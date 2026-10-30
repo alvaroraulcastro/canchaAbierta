@@ -1,10 +1,26 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
+import Credentials from "next-auth/providers/credentials";
 import { isAdminEmail } from "@/lib/auth/admins";
+import { isE2eMockEnabled } from "@/lib/e2e/env";
+
+const e2eProvider = Credentials({
+  id: "e2e",
+  name: "E2E",
+  credentials: {
+    email: { label: "Email", type: "text" },
+  },
+  authorize(credentials) {
+    const email =
+      typeof credentials?.email === "string" ? credentials.email.trim().toLowerCase() : "";
+    if (!email) return null;
+    return { id: email, email, name: "E2E Jugador" };
+  },
+});
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
-  providers: [Google],
+  providers: isE2eMockEnabled() ? [Google, e2eProvider] : [Google],
   session: { strategy: "jwt" },
   pages: {
     signIn: "/auth/signin",

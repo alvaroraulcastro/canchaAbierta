@@ -27,7 +27,7 @@ export default function RootLayout({
       <body className="flex min-h-screen flex-col antialiased">
         <a
           href="#main-content"
-          className="sr-only rounded-full bg-brand-300 px-4 py-2 text-sm font-semibold text-brand-950 focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50"
+          className="sr-only rounded-full bg-brand-300 px-4 py-2 text-sm font-semibold text-brand-950 focus-visible:not-sr-only focus-visible:fixed focus-visible:left-4 focus-visible:top-4 focus-visible:z-50 focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
         >
           Saltar al contenido
         </a>

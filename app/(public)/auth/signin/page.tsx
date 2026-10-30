@@ -12,10 +12,12 @@ export const metadata: Metadata = {
 };
 
 const ERRORS: Record<string, string> = {
-  Configuration: "Falta la configuración de Google OAuth.",
-  AccessDenied: "Google no autorizó el acceso.",
-  OAuthAccountNotLinked: "Ese email ya está asociado a otra cuenta.",
-  Verification: "El enlace de verificación no es válido.",
+  Configuration:
+    "Falta la configuración de Google OAuth. Revisa AUTH_GOOGLE_ID y AUTH_GOOGLE_SECRET en el entorno.",
+  AccessDenied: "Google no autorizó el acceso. Prueba otra cuenta o vuelve a intentar.",
+  OAuthAccountNotLinked:
+    "Ese email ya está asociado a otra cuenta. Entra con el proveedor que usaste la primera vez.",
+  Verification: "El enlace de verificación expiró o no es válido. Solicita uno nuevo.",
 };
 
 export default async function SignInPage({
@@ -47,7 +49,7 @@ export default async function SignInPage({
       ) : null}
       <form action={signInWithGoogle} className="flex flex-col gap-3">
         <input type="hidden" name="callbackUrl" value={callbackUrl} />
-        <Button type="submit">Continuar con Google</Button>
+        <Button type="submit">Entrar con Google</Button>
       </form>
     </main>
   );

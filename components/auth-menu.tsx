@@ -3,13 +3,16 @@ import { signOutUser } from "@/lib/auth/actions";
 import { auth } from "@/lib/auth/config";
 import { Button } from "@/components/ui/button";
 
+const navLinkClass =
+  "rounded-full px-3 py-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-surface";
+
 export async function AuthMenu() {
   const session = await auth();
   if (!session?.user) {
     return (
       <Link
         href="/auth/signin"
-        className="rounded-full bg-brand-300 px-3 py-1.5 text-sm font-semibold text-brand-950 hover:bg-brand-400"
+        className={`${navLinkClass} bg-brand-300 text-sm font-semibold text-brand-950 hover:bg-brand-400`}
       >
         Entrar
       </Link>
@@ -17,16 +20,16 @@ export async function AuthMenu() {
   }
 
   return (
-    <nav aria-label="Cuenta" className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2" aria-label="Cuenta">
       {session.user.isAdmin ? (
-        <Link href="/admin" className="rounded-full px-3 py-1.5 text-sm font-medium hover:bg-brand-200">
+        <Link href="/admin" className={`${navLinkClass} text-sm font-medium hover:bg-brand-200`}>
           Admin
         </Link>
       ) : null}
       <Link
         href="/cuenta"
-        className="max-w-40 truncate rounded-full px-3 py-1.5 text-sm hover:bg-brand-200"
-        aria-label={`Mi cuenta: ${session.user.name ?? session.user.email}`}
+        className={`${navLinkClass} max-w-[10rem] truncate text-sm hover:bg-brand-200 sm:max-w-40`}
+        title={session.user.name ?? session.user.email ?? undefined}
       >
         {session.user.name ?? session.user.email}
       </Link>
@@ -35,6 +38,6 @@ export async function AuthMenu() {
           Salir
         </Button>
       </form>
-    </nav>
+    </div>
   );
 }

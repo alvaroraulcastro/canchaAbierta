@@ -35,7 +35,7 @@ export default async function AccountPage() {
           <Link
             key={link.href}
             href={link.href}
-            className="rounded-2xl border border-line bg-card px-4 py-3 text-sm font-medium hover:bg-brand-100"
+            className="rounded-2xl border border-line bg-card px-4 py-3 text-sm font-medium hover:bg-brand-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
           >
             {link.label}
           </Link>

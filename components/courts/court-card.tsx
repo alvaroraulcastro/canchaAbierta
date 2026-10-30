@@ -12,22 +12,23 @@ function safePhoto(url: string): string | undefined {
 }
 
 export function CourtCard({ court }: { court: CourtView }) {
+  const photo = safePhoto(court.photoUrl);
   return (
     <Card className="overflow-hidden">
       <div
         className="h-36 bg-brand-200 bg-cover bg-center"
-        style={
-          safePhoto(court.photoUrl)
-            ? { backgroundImage: `url("${safePhoto(court.photoUrl)}")` }
-            : undefined
-        }
-        role={safePhoto(court.photoUrl) ? "img" : undefined}
-        aria-label={safePhoto(court.photoUrl) ? court.name : undefined}
+        style={photo ? { backgroundImage: `url("${photo}")` } : undefined}
+        role={photo ? "img" : undefined}
+        aria-label={photo ? court.name : undefined}
+        aria-hidden={photo ? undefined : true}
       />
       <CardHeader>
         <div className="flex items-start justify-between gap-3">
-          <CardTitle>
-            <Link href={courtHref(court.id)} className="hover:text-link">
+          <CardTitle className="min-w-0 flex-1">
+            <Link
+              href={courtHref(court.id)}
+              className="rounded-sm hover:text-link focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+            >
               {court.name}
             </Link>
           </CardTitle>

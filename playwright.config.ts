@@ -20,5 +20,9 @@ export default defineConfig({
         url: baseURL,
         reuseExistingServer: true,
         timeout: 120_000,
+        env: {
+          ...process.env,
+          E2E_MOCK: "1",
+        },
       },
 });

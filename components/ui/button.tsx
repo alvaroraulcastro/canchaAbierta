@@ -11,6 +11,7 @@ const buttonVariants = cva(
         default: "bg-brand-300 text-brand-950 shadow-sm hover:bg-brand-400",
         outline: "border border-line bg-card text-ink hover:bg-brand-100",
         ghost: "text-ink hover:bg-brand-100",
+        destructive: "bg-destructive text-destructive-foreground shadow-sm hover:opacity-90",
       },
       size: {
         default: "h-10 px-4",

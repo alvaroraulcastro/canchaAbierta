@@ -1,6 +1,6 @@
 # Plan de implementación — canchaAbierta
 
-> Estado: **Fase 4 — Endurecimiento (en curso).** Completados: validaciones Zod, error boundaries, loading, logging, accesibilidad, sync Flow en inscripciones pendientes, smoke E2E. Pendientes: E2E inscripción+pago mockeado, Flow prod, OAuth prod. · Última actualización: 2026-10-30
+> Estado: **Fase 4 — Endurecimiento (en curso).** Completados: validaciones Zod, error boundaries, loading, logging, accesibilidad, sync Flow en inscripciones pendientes, smoke E2E, cancelación jugador (sin reembolso Flow), infra E2E mock. Pendientes: correr E2E inscripción con `E2E_MATCH_ID`, Flow prod, OAuth prod. · Última actualización: 2026-10-30
 
 ## 0. Índice de documentos
 
@@ -371,6 +371,7 @@ canchaAbierta/
   5. email al jugador + Notificación in-app
 - [x] `emails/inscription-confirmed.tsx` (React Email)
 - [x] Página `/cuenta/mis-inscripciones`
+- [x] Cancelación de inscripción por jugador (`paid`, ≥24h antes del partido; libera cupo; sin reembolso Flow)
 - [x] Página `/cuenta/notificaciones` (in-app)
 
 ### Fase 3 — Panel admin
@@ -387,7 +388,7 @@ canchaAbierta/
 - [x] Logging estructurado (sin secretos)
 - [x] Sync inscripciones `pending` > 5 min con Flow en `/cuenta/mis-inscripciones`
 - [x] Smoke E2E Playwright (`tests/e2e/public-routes.spec.ts`, `npm run test:e2e`)
-- [ ] E2E flujo crítico inscripción + pago (Flow mockeado)
+- [x] Infra E2E mock (`E2E_MOCK=1`, `/api/e2e/auth/signin`, checkout Flow simulado, `tests/e2e/inscription-flow.spec.ts`; requiere `E2E_MATCH_ID` + Sheets)
 - [x] Accesibilidad: revisar contraste, navegación por teclado, aria labels
 - [ ] Pasaje a producción de Flow.cl (sandbox → prod)
 - [ ] Verificación de Google OAuth para producción (pantalla de consentimiento)

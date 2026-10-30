@@ -109,9 +109,23 @@ export function parseAttendanceFormData(formData: FormData): AttendanceFormData 
 
 export type InscriptionsSearchParams = {
   showPendingNotice: boolean;
+  showCancelledNotice: boolean;
+  cancelError: string | null;
 };
 
 export function parseInscriptionsSearchParams(params: SearchParams): InscriptionsSearchParams {
   const estado = readSearchParam(params.estado);
-  return { showPendingNotice: estado === "pending" };
+  const cancelada = readSearchParam(params.cancelada);
+  const error = readSearchParam(params.error);
+  let cancelError: string | null = null;
+  if (error === "cancelacion") {
+    cancelError = "No se pudo cancelar la inscripción.";
+  } else if (error) {
+    cancelError = error;
+  }
+  return {
+    showPendingNotice: estado === "pending",
+    showCancelledNotice: cancelada === "1",
+    cancelError,
+  };
 }

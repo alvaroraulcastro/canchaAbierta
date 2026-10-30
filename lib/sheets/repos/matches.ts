@@ -106,3 +106,16 @@ export async function incrementMatchPlayers(matchId: string): Promise<void> {
   if (!Number.isFinite(current)) throw new Error("currentPlayers del partido es inválido");
   await updateSheetRow("Partidos", row.rowNumber, row.headers, { currentPlayers: current + 1 });
 }
+
+export async function decrementMatchPlayers(matchId: string): Promise<void> {
+  const row = await findSheetRowByColumn("Partidos", "id", matchId);
+  if (!row) throw new Error("No se encontró el partido de la inscripción");
+  const index = row.headers.indexOf("currentPlayers");
+  if (index < 0) throw new Error("La hoja Partidos no tiene la columna currentPlayers");
+  const raw = row.values[index];
+  const current = typeof raw === "number" ? raw : Number(raw ?? 0);
+  if (!Number.isFinite(current)) throw new Error("currentPlayers del partido es inválido");
+  await updateSheetRow("Partidos", row.rowNumber, row.headers, {
+    currentPlayers: Math.max(0, current - 1),
+  });
+}
