@@ -1,26 +1,43 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 export default function HomePage() {
   return (
     <main className="mx-auto flex max-w-5xl flex-col gap-8 px-6 py-12">
-      <header className="overflow-hidden rounded-[2rem] border border-line bg-card px-6 py-10 shadow-sm sm:px-10">
-        <p className="inline-flex rounded-full bg-brand-300 px-3 py-1 text-xs font-semibold tracking-wide text-brand-950 uppercase">
-          Pádel y babyfútbol
-        </p>
-        <h1 className="mt-5 max-w-3xl text-4xl font-semibold tracking-tight text-balance text-ink sm:text-5xl">
-          Encuentra tu partido y suma el cupo
-        </h1>
-        <p className="mt-4 max-w-2xl text-lg text-muted">
-          Revisa canchas, horarios y precio. Te inscribes y pagas en línea con Flow.
-        </p>
-        <div className="mt-6 flex flex-wrap gap-3">
-          <Button asChild>
-            <Link href="/partidos">Ver partidos</Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link href="/canchas">Ver canchas</Link>
-          </Button>
+      <header className="overflow-hidden rounded-[2rem] border border-line bg-card shadow-sm">
+        <div className="relative aspect-[16/9] w-full">
+          <Image
+            src="/images/hero-cancha-split.jpg"
+            alt="Cancha de baby fútbol a la izquierda y cancha de pádel a la derecha"
+            fill
+            priority
+            sizes="(max-width: 1024px) 100vw, 1024px"
+            className="object-cover object-center"
+          />
+          <div
+            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-brand-950/75 via-brand-950/25 to-transparent"
+            aria-hidden
+          />
+        </div>
+        <div className="px-6 py-10 sm:px-10">
+          <p className="inline-flex rounded-full bg-brand-300 px-3 py-1 text-xs font-semibold tracking-wide text-brand-950 uppercase">
+            Pádel y babyfútbol
+          </p>
+          <h1 className="mt-5 max-w-3xl text-4xl font-semibold tracking-tight text-balance text-ink sm:text-5xl">
+            Encuentra tu partido y suma el cupo
+          </h1>
+          <p className="mt-4 max-w-2xl text-lg text-muted">
+            Revisa canchas, horarios y precio. Te inscribes y pagas en línea con Flow.
+          </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Button asChild>
+              <Link href="/partidos">Ver partidos</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/canchas">Ver canchas</Link>
+            </Button>
+          </div>
         </div>
       </header>
 

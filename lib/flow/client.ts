@@ -1,4 +1,9 @@
 import { z } from "zod";
+import { isE2eMockEnabled } from "@/lib/e2e/env";
+import {
+  e2eMockCreatePayment,
+  e2eMockGetPaymentStatus,
+} from "@/lib/flow/e2e-mock";
 import { signFlowParams } from "@/lib/flow/signature";
 
 const paymentStatusSchema = z.object({
@@ -38,6 +43,9 @@ function flowCredentials(): { apiKey: string; secret: string } {
 }
 
 export async function getFlowPaymentStatus(token: string): Promise<FlowPaymentStatus> {
+  if (isE2eMockEnabled()) {
+    return e2eMockGetPaymentStatus(token);
+  }
   const { apiKey, secret } = flowCredentials();
   const params = { apiKey, token };
   const body = new URLSearchParams({ ...params, s: signFlowParams(params, secret) });
@@ -69,6 +77,13 @@ export async function createFlowPayment(input: {
   urlConfirmation: string;
   optional?: Record<string, string>;
 }): Promise<FlowPaymentCreate> {
+  if (isE2eMockEnabled()) {
+    return e2eMockCreatePayment({
+      commerceOrder: input.commerceOrder,
+      email: input.email,
+      urlReturn: input.urlReturn,
+    });
+  }
   const { apiKey, secret } = flowCredentials();
   const confirmation = input.urlConfirmation.trim() || process.env.FLOW_WEBHOOK_URL?.trim();
   if (!confirmation) {

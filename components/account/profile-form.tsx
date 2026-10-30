@@ -27,10 +27,12 @@ export function ProfileForm({ player }: { player: Player | null }) {
         Teléfono
         <Input
           name="phone"
+          type="tel"
+          inputMode="tel"
+          autoComplete="tel"
           required
           defaultValue={player?.phone ?? ""}
-          autoComplete="tel"
-          placeholder="+56 9 ..."
+          placeholder="+56 9 1234 5678"
         />
       </label>
       <label className="flex flex-col gap-1.5 text-sm">
@@ -38,7 +40,7 @@ export function ProfileForm({ player }: { player: Player | null }) {
         <select
           name="level"
           defaultValue={player?.level ?? ""}
-          className="h-10 rounded-full border border-line bg-card px-4 text-sm"
+          className="field w-full min-w-0"
         >
           <option value="">Seleccionar</option>
           {LEVEL_VALUES.map((level) => (
@@ -57,11 +59,15 @@ export function ProfileForm({ player }: { player: Player | null }) {
         />
       </label>
       {state && !state.ok ? (
-        <p className="text-sm text-red-700" role="alert">
+        <p className="text-sm text-destructive" role="alert">
           {state.error}
         </p>
       ) : null}
-      {state?.ok ? <p className="text-sm text-brand-800">Perfil guardado.</p> : null}
+      {state?.ok ? (
+        <p className="text-sm text-brand-800" aria-live="polite">
+          Perfil guardado.
+        </p>
+      ) : null}
       <Button type="submit" disabled={pending}>
         {pending ? "Guardando…" : "Guardar perfil"}
       </Button>

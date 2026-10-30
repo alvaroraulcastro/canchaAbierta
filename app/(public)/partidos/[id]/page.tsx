@@ -89,19 +89,19 @@ export default async function MatchPage({
       <section className="grid gap-4 sm:grid-cols-3">
         <article className="rounded-3xl border border-line bg-brand-100 p-5">
           <h2 className="text-sm text-muted">Precio</h2>
-          <p className="mt-1 text-2xl font-semibold">{formatCLP(match.priceCLP)}</p>
+          <p className="mt-1 text-2xl font-semibold tabular-nums">{formatCLP(match.priceCLP)}</p>
           <p className="text-sm text-muted">por jugador</p>
         </article>
         <article className="rounded-3xl border border-line bg-card p-5">
           <h2 className="text-sm text-muted">Cupos</h2>
-          <p className="mt-1 text-2xl font-semibold">
+          <p className="mt-1 text-2xl font-semibold tabular-nums">
             {spotsLabel(match.currentPlayers, match.maxPlayers)}
           </p>
           <p className="text-sm text-muted">{full ? "Sin cupos libres" : `${spotsLeft} libres`}</p>
         </article>
         <article className="rounded-3xl border border-line bg-card p-5">
           <h2 className="text-sm text-muted">Duración</h2>
-          <p className="mt-1 text-2xl font-semibold">{match.durationMin} min</p>
+          <p className="mt-1 text-2xl font-semibold tabular-nums">{match.durationMin} min</p>
           <p className="text-sm text-muted">
             <Link href={courtHref(match.courtId)} className="text-link hover:underline">
               Ver cancha

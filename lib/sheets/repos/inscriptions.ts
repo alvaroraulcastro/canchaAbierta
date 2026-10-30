@@ -182,3 +182,19 @@ export async function setInscriptionAdminApproved(
   });
   return before;
 }
+
+export async function cancelInscriptionByPlayer(
+  inscriptionId: string,
+): Promise<{ matchId: string; wasPaid: boolean } | null> {
+  const row = await findSheetRowByColumn("Inscripciones", "id", inscriptionId);
+  if (!row) return null;
+  const status = paymentStatusFromCell(cellText(row, "paymentStatus"));
+  if (status !== "paid") return null;
+  const matchId = cellText(row, "matchId");
+  if (!matchId) return null;
+  await updateSheetRow("Inscripciones", row.rowNumber, row.headers, {
+    paymentStatus: "cancelled",
+    updatedAt: new Date().toISOString(),
+  });
+  return { matchId, wasPaid: true };
+}

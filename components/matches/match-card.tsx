@@ -12,9 +12,12 @@ export function MatchCard({ match }: { match: MatchView }) {
     <Card>
       <CardHeader>
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
+          <div className="min-w-0 flex-1">
             <CardTitle>
-              <Link href={matchHref(match.id)} className="hover:text-link">
+              <Link
+                href={matchHref(match.id)}
+                className="rounded-sm hover:text-link focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+              >
                 {match.courtName}
               </Link>
             </CardTitle>
@@ -31,7 +34,7 @@ export function MatchCard({ match }: { match: MatchView }) {
       <CardContent className="grid gap-1 pt-3 text-sm">
         <p>{formatShortDate(match.dateTime)}</p>
         <p>{spotsLabel(match.currentPlayers, match.maxPlayers)}</p>
-        <p className="font-medium">{formatCLP(match.priceCLP)} por jugador</p>
+        <p className="font-medium tabular-nums">{formatCLP(match.priceCLP)} por jugador</p>
         {full && match.allowOverbook ? <Badge variant="warning">Sobrecupo</Badge> : null}
         {full && !match.allowOverbook ? <Badge variant="muted">Completo</Badge> : null}
       </CardContent>
