@@ -3,9 +3,11 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { listMatchViews } from "@/lib/catalog";
+import { syncStalePendingInscriptionsForPlayer } from "@/lib/flow/sync-pending-inscriptions";
 import { formatCLP } from "@/lib/format";
 import { auth } from "@/lib/auth/config";
 import { listInscriptionsByPlayer } from "@/lib/sheets/repos/inscriptions";
+import { parseInscriptionsSearchParams, type SearchParams } from "@/lib/search-params";
 import { formatMatchDateTime } from "@/lib/time";
 import { matchHref } from "@/lib/routes";
 
@@ -21,9 +23,16 @@ const statusLabel: Record<string, string> = {
   cancelled: "Cancelada",
 };
 
-export default async function MyInscriptionsPage() {
+type PageProps = {
+  searchParams: Promise<SearchParams>;
+};
+
+export default async function MyInscriptionsPage({ searchParams }: PageProps) {
   const session = await auth();
   if (!session?.user?.email) redirect("/auth/signin?callbackUrl=/cuenta/mis-inscripciones");
+
+  const sp = parseInscriptionsSearchParams(await searchParams);
+  await syncStalePendingInscriptionsForPlayer(session.user.email);
 
   const [inscriptions, matches] = await Promise.all([
     listInscriptionsByPlayer(session.user.email),
@@ -42,6 +51,12 @@ export default async function MyInscriptionsPage() {
         </Link>
       </p>
       <h1 className="text-3xl font-semibold tracking-tight">Mis inscripciones</h1>
+      {sp.showPendingNotice ? (
+        <p className="rounded-xl border border-line bg-brand-50 px-4 py-3 text-sm">
+          Tu pago quedó pendiente. Si ya pagaste en Flow, espera unos minutos o recarga esta página
+          para sincronizar el estado.
+        </p>
+      ) : null}
       {sorted.length === 0 ? (
         <p className="text-muted">
           Aún no tienes inscripciones.{" "}

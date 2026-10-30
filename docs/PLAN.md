@@ -1,6 +1,6 @@
 # Plan de implementación — canchaAbierta
 
-> Estado: **Fase 4 — Endurecimiento (en curso).** Completados: validaciones Zod, error boundaries, loading states, logging estructurado, accesibilidad. Pendientes: tests E2E Playwright, pase a producción Flow, verificación OAuth. · Última actualización: 2026-10-08
+> Estado: **Fase 4 — Endurecimiento (en curso).** Completados: validaciones Zod, error boundaries, loading, logging, accesibilidad, sync Flow en inscripciones pendientes, smoke E2E. Pendientes: E2E inscripción+pago mockeado, Flow prod, OAuth prod. · Última actualización: 2026-10-30
 
 ## 0. Índice de documentos
 
@@ -385,7 +385,9 @@ canchaAbierta/
 - [x] Validaciones Zod en todos los inputs (incluidos `searchParams`)
 - [x] Manejo de errores con `error.tsx` y `not-found.tsx` por segmento
 - [x] Logging estructurado (sin secretos)
-- [ ] Tests E2E Playwright: flujo crítico de inscripción + pago (mockeando Flow)
+- [x] Sync inscripciones `pending` > 5 min con Flow en `/cuenta/mis-inscripciones`
+- [x] Smoke E2E Playwright (`tests/e2e/public-routes.spec.ts`, `npm run test:e2e`)
+- [ ] E2E flujo crítico inscripción + pago (Flow mockeado)
 - [x] Accesibilidad: revisar contraste, navegación por teclado, aria labels
 - [ ] Pasaje a producción de Flow.cl (sandbox → prod)
 - [ ] Verificación de Google OAuth para producción (pantalla de consentimiento)

@@ -106,3 +106,12 @@ export function parseAttendanceFormData(formData: FormData): AttendanceFormData 
   });
   return parsed.success ? parsed.data : null;
 }
+
+export type InscriptionsSearchParams = {
+  showPendingNotice: boolean;
+};
+
+export function parseInscriptionsSearchParams(params: SearchParams): InscriptionsSearchParams {
+  const estado = readSearchParam(params.estado);
+  return { showPendingNotice: estado === "pending" };
+}
