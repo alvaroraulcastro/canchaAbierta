@@ -111,7 +111,8 @@ export default async function MatchPage({
       </section>
       {full && match.allowOverbook ? (
         <p className="rounded-2xl bg-amber-50 p-4 text-sm text-amber-950 dark:bg-amber-950 dark:text-amber-50">
-          El partido está lleno, pero acepta sobrecupo. El admin debe confirmarlo después del pago.
+          El cupo oficial está completo, pero puedes solicitar un lugar extra. Si pagas, te avisaremos
+          cuando quede confirmada tu inscripción.
         </p>
       ) : null}
       {errorMessage ? (

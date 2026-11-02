@@ -35,7 +35,7 @@ export function MatchCard({ match }: { match: MatchView }) {
         <p>{formatShortDate(match.dateTime)}</p>
         <p>{spotsLabel(match.currentPlayers, match.maxPlayers)}</p>
         <p className="font-medium tabular-nums">{formatCLP(match.priceCLP)} por jugador</p>
-        {full && match.allowOverbook ? <Badge variant="warning">Sobrecupo</Badge> : null}
+        {full && match.allowOverbook ? <Badge variant="warning">Cupo extra</Badge> : null}
         {full && !match.allowOverbook ? <Badge variant="muted">Completo</Badge> : null}
       </CardContent>
     </Card>
