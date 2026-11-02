@@ -12,6 +12,7 @@ export type CourtView = Court & {
 export type MatchView = Match & {
   courtName: string;
   sport: Sport;
+  venueId: string;
   venueName: string;
   venueAddress: string;
   priceCLP: number;
@@ -68,6 +69,7 @@ function toMatchView(
     ...match,
     courtName: court.name,
     sport: court.sport,
+    venueId: court.venueId,
     venueName: venue?.name ?? "Complejo sin nombre",
     venueAddress: venue?.address ?? "",
     priceCLP: court.priceCLP,

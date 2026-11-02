@@ -1,4 +1,5 @@
 import { CancelInscriptionForm } from "@/components/inscriptions/cancel-inscription-form";
+import { InscriptionCheckInQr } from "@/components/inscriptions/inscription-check-in-qr";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -113,6 +114,9 @@ export default async function MyInscriptionsPage({ searchParams }: PageProps) {
                   </p>
                 ) : null}
                 <p className="mt-2 text-sm">{formatCLP(inscription.amountCLP)}</p>
+                {inscription.checkedInAt ? (
+                  <p className="mt-2 text-sm text-brand-800">Ingreso registrado</p>
+                ) : null}
                 {match ? (
                   <Link
                     href={matchHref(match.id)}
@@ -127,6 +131,7 @@ export default async function MyInscriptionsPage({ searchParams }: PageProps) {
                 {cancelPolicy && !cancelPolicy.ok ? (
                   <p className="mt-3 text-sm text-muted">{cancelPolicy.error}</p>
                 ) : null}
+                <InscriptionCheckInQr inscriptionId={inscription.id} />
               </li>
             );
           })}

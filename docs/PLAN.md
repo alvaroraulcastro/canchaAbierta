@@ -1,6 +1,6 @@
 # Plan de implementación — canchaAbierta
 
-> Estado: **Fase 4 — Endurecimiento (en curso).** Completados: validaciones Zod, error boundaries, loading, logging, accesibilidad, sync Flow en inscripciones pendientes, smoke E2E, cancelación jugador (sin reembolso Flow), infra E2E mock. Pendientes: correr E2E inscripción con `E2E_MATCH_ID`, Flow prod, OAuth prod. · Última actualización: 2026-10-30
+> Estado: **Fase 5 — Calendar, QR, roles y reportes (completada).** Fase 4 cerrada salvo Flow prod y OAuth prod. · Última actualización: 2026-10-30
 
 ## 0. Índice de documentos
 
@@ -393,6 +393,15 @@ canchaAbierta/
 - [ ] Pasaje a producción de Flow.cl (sandbox → prod)
 - [ ] Verificación de Google OAuth para producción (pantalla de consentimiento)
 
+### Fase 5 — Calendar, QR, roles y reportes
+- [x] Hoja `AdminUsers` + roles (`super_admin`, `venue_admin`, `support`); runtime desde Sheets (bootstrap vía `ALLOWED_ADMIN_EMAILS`)
+- [x] Panel `/admin/usuarios` (solo `super_admin`) + permisos en acciones admin y nav
+- [x] Columnas `checkedInAt`, `checkedInBy`, `calendarEventId` en Inscripciones; Calendar en Jugadores
+- [x] QR check-in jugador + scanner `/admin/check-in` + asistencia persistente (unificada con marcar asistencia)
+- [x] `/admin/reportes` + export CSV scoped por rol
+- [x] Google Calendar OAuth (`calendar.events`), eventos al confirmar pago y borrado al cancelar
+- [x] Docs `GOOGLE_CALENDAR_SETUP.md`, tests unitarios mínimos (`npm run test:unit`)
+
 ## 9. Riesgos y mitigaciones
 
 | Riesgo | Mitigación |
@@ -401,11 +410,12 @@ canchaAbierta/
 | **Cuota Sheets API** (60/min/user, 300/min/project) | Cache agresivo con tags; backoff exponencial; logging de cuota |
 | **Webhook perdido de Flow** | Página "mis inscripciones" consulta Flow directamente si el estado quedó `pending` > 5 min |
 | **Schema drift** (admin edita columnas) | Zod valida cada read; `docs/SHEETS_SCHEMA.md` como contrato |
-| **Admin compromete secret** | `ALLOWED_ADMIN_EMAILS` editable solo por redeploy; sin UI de auto-promoción |
+| **Admin compromete secret** | Roles en hoja `AdminUsers`; solo `super_admin` gestiona usuarios; `ALLOWED_ADMIN_EMAILS` solo bootstrap inicial |
 | **Email rebota** | Logs de Resend + reintento; UI muestra advertencia en mis inscripciones |
 | **Duplicado de webhook de Flow** | Dedupe en KV por `token` con TTL 24h antes de mutar Sheets |
 | **Persona no-admin intenta acceder a `/admin/*`** | `middleware.ts` chequea `isAdmin` desde JWT; redirige a `/auth/signin` |
 | **Service account key filtrada** | Rotar la key en GCP (invalidar la anterior) + redeploy con nueva env var |
+| **Tokens Calendar en Sheets** | Cifrado AES-GCM con clave derivada de `AUTH_SECRET`; scope mínimo `calendar.events`; rotación implica reconexión |
 | **Cambio en API de Flow** | Encapsular en `lib/flow/client.ts`; tests E2E detectan regresiones |
 
 ## 10. Convenciones del proyecto
@@ -421,23 +431,31 @@ canchaAbierta/
 
 ## 11. Matriz de permisos (resumen)
 
-| Acción | Visitante (sin login) | Jugador | Admin |
+### Público y jugador
+
+| Acción | Visitante (sin login) | Jugador | Admin (cualquier rol activo) |
 |---|---|---|---|
 | Ver `/`, `/canchas`, `/partidos`, `/canchas/[id]`, `/partidos/[id]` | ✅ | ✅ | ✅ |
 | Iniciar sesión con Google | ✅ | n/a | n/a |
 | Acceder a `/cuenta/*` | ❌ redirect a `/auth/signin` | ✅ | ✅ |
 | Inscribirse a un partido (con pago) | ❌ | ✅ | ✅ |
-| Ver sus propias inscripciones | ❌ | ✅ | ✅ |
-| Cancelar su propia inscripción | ❌ | ✅ (si `paymentStatus=paid` y la cancelación está dentro de la política) | ✅ |
-| Acceder a `/admin/*` | ❌ | ❌ | ✅ |
-| Crear/editar/eliminar canchas | ❌ | ❌ | ✅ |
-| Crear/editar/eliminar partidos | ❌ | ❌ | ✅ |
-| Aprobar/rechazar sobrecupos | ❌ | ❌ | ✅ |
-| Marcar asistencia | ❌ | ❌ | ✅ |
-| Ver audit log | ❌ | ❌ | ✅ |
-| Ver listado global de jugadores | ❌ | ❌ | ✅ |
+| Ver sus propias inscripciones + QR check-in (pagadas) | ❌ | ✅ | ✅ |
+| Conectar Google Calendar (`/cuenta/integraciones`) | ❌ | ✅ | ✅ |
+| Cancelar su propia inscripción | ❌ | ✅ (política 24h) | ✅ |
 
-> La promoción a admin ocurre **automáticamente** en el callback `jwt` de Auth.js si el email del usuario está en `ALLOWED_ADMIN_EMAILS`. No hay UI para promover usuarios.
+### Roles admin (hoja `AdminUsers`)
+
+| Permiso | super_admin | venue_admin | support |
+|---|---|---|---|
+| `/admin/usuarios` CRUD | ✅ | ❌ | ❌ |
+| CRUD canchas/partidos | ✅ | ✅ (venues en `venueIds`) | ❌ |
+| Aprobar sobrecupo | ✅ | ✅ (venue del partido) | ❌ |
+| Check-in QR / marcar asistencia | ✅ | ✅ (venue del partido) | ✅ (solo check-in) |
+| Reportes + CSV | ✅ (global) | ✅ (filtrado) | ✅ (lectura) |
+| Auditoría | ✅ | opcional scoped | ❌ |
+| Listado jugadores | ✅ | ✅ scoped | ✅ lectura |
+
+> La promoción y roles se leen de la hoja **AdminUsers** en cada login (JWT). `ALLOWED_ADMIN_EMAILS` solo siembra `super_admin` si la hoja está vacía.
 
 ## 12. Testing
 
@@ -485,8 +503,4 @@ Para mantener el MVP acotado, las siguientes funcionalidades **no** entran en v1
 - ❌ Multi-moneda (solo CLP)
 - ❌ Sistema de ranking / ELO entre jugadores
 - ❌ Comentarios y reseñas de canchas
-- ❌ Integración con Google Calendar (agregar partido al calendario del jugador)
-- ❌ Confirmación de asistencia por QR en la entrada
-- ❌ Multi-admin con roles diferenciados (venue-admin, super-admin, soporte)
-- ❌ Reportes / analytics para el admin (más allá de ver el Sheets directamente)
 - ❌ Cancelación de inscripción con reembolso automático (requiere API adicional de Flow)

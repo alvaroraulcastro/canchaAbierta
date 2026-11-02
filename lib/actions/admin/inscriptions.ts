@@ -3,12 +3,13 @@
 import { revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { getAdminSession } from "@/lib/auth/require-admin";
+import { getMatchView } from "@/lib/catalog";
+import { requireAdminPermission, requireVenueAccess } from "@/lib/auth/require-admin";
 import { rethrowNavigationError } from "@/lib/rethrow-navigation";
 import { sendEmail } from "@/lib/email/client";
 import { createLogger } from "@/lib/logger";
 import { appendAuditEntry } from "@/lib/sheets/repos/audit";
-import { getInscription, setInscriptionAdminApproved } from "@/lib/sheets/repos/inscriptions";
+import { getInscription, markInscriptionCheckedIn, setInscriptionAdminApproved } from "@/lib/sheets/repos/inscriptions";
 import { createNotification } from "@/lib/sheets/repos/notifications";
 import { parseAttendanceFormData } from "@/lib/search-params";
 import { inscriptionsTag, SHEET_TAGS } from "@/lib/sheets/tags";
@@ -20,8 +21,7 @@ const overbookSchema = z.object({
 });
 
 export async function decideOverbook(formData: FormData): Promise<void> {
-  const admin = await getAdminSession();
-  if (!admin) throw new Error("No autorizado");
+  const admin = await requireAdminPermission("overbook_decide");
 
   const parsed = overbookSchema.safeParse({
     inscriptionId: formData.get("inscriptionId"),
@@ -33,6 +33,10 @@ export async function decideOverbook(formData: FormData): Promise<void> {
   }
 
   const approved = parsed.data.approved === "true";
+  const matchView = await getMatchView(parsed.data.matchId);
+  if (!matchView) throw new Error("Partido no encontrado");
+  await requireVenueAccess(matchView.venueId);
+
   try {
     const before = await setInscriptionAdminApproved(parsed.data.inscriptionId, approved);
     if (!before) throw new Error("Inscripción no encontrada");
@@ -79,8 +83,7 @@ export async function decideOverbook(formData: FormData): Promise<void> {
 }
 
 export async function markAttendance(formData: FormData): Promise<void> {
-  const admin = await getAdminSession();
-  if (!admin) throw new Error("No autorizado");
+  const admin = await requireAdminPermission("check_in");
 
   const data = parseAttendanceFormData(formData);
   if (!data) throw new Error("Datos incompletos");
@@ -93,14 +96,26 @@ export async function markAttendance(formData: FormData): Promise<void> {
     throw new Error("Solo inscripciones pagadas");
   }
 
+  const matchView = await getMatchView(data.matchId);
+  if (!matchView) throw new Error("Partido no encontrado");
+  await requireVenueAccess(matchView.venueId);
+
+  const result = await markInscriptionCheckedIn({
+    inscriptionId: data.inscriptionId,
+    adminEmail: admin.email,
+  });
+  if (!result) throw new Error("No se pudo registrar la asistencia");
+
   await appendAuditEntry({
     adminEmail: admin.email,
     action: "update",
     entity: "inscription",
     entityId: data.inscriptionId,
     before: null,
-    after: { attendanceMarked: true, at: new Date().toISOString() },
+    after: { checkedInAt: result.alreadyCheckedIn ? "existing" : new Date().toISOString() },
   });
+  revalidateTag(SHEET_TAGS.Inscripciones);
   revalidateTag(SHEET_TAGS.AdminAudit);
+  revalidateTag(inscriptionsTag(data.matchId));
   redirect(`/admin/partidos/${encodeURIComponent(data.matchId)}/inscripciones?ok=1`);
 }

@@ -15,6 +15,7 @@ const SHEET_TO_TAG = {
   Inscripciones: "inscriptions",
   Notificaciones: "notifications",
   AdminAudit: "audit",
+  AdminUsers: "admin-users",
 };
 
 function onChange(e) {

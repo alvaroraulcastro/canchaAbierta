@@ -3,9 +3,14 @@ import { renderInscriptionConfirmedEmail } from "@/emails/inscription-confirmed"
 import { sendEmail } from "@/lib/email/client";
 import { getMatchView } from "@/lib/catalog";
 import { getFlowPaymentStatus } from "@/lib/flow/client";
+import { createMatchCalendarEvent } from "@/lib/google/calendar";
 import { createLogger } from "@/lib/logger";
+import { listAdminUsers, adminUserVenueIds } from "@/lib/sheets/repos/admin-users";
 import { getPlayer } from "@/lib/sheets/repos/players";
-import { syncInscriptionPayment } from "@/lib/sheets/repos/inscriptions";
+import {
+  setInscriptionCalendarEventId,
+  syncInscriptionPayment,
+} from "@/lib/sheets/repos/inscriptions";
 import { incrementMatchPlayers } from "@/lib/sheets/repos/matches";
 import { createNotification } from "@/lib/sheets/repos/notifications";
 import type { PaymentStatus } from "@/lib/sheets/schemas";
@@ -58,16 +63,38 @@ export async function confirmFlowPayment(token: string): Promise<ConfirmedPaymen
     if (synced.overbookRequested) {
       await notifyOverbookAdmins(synced.matchId, synced.playerEmail);
     }
+    await syncCalendarAfterPayment({
+      playerEmail: synced.playerEmail,
+      inscriptionId: payment.commerceOrder,
+      matchId: synced.matchId,
+    });
   }
 
   return { paymentStatus, matchId: synced.matchId, changed: synced.changed || becamePaid };
+}
+
+async function syncCalendarAfterPayment(input: {
+  playerEmail: string;
+  inscriptionId: string;
+  matchId: string;
+}): Promise<void> {
+  try {
+    const eventId = await createMatchCalendarEvent(input);
+    if (eventId) {
+      await setInscriptionCalendarEventId(input.inscriptionId, eventId);
+    }
+  } catch (error) {
+    logger.error("No se pudo crear evento en Google Calendar", error, input);
+  }
 }
 
 async function notifyOverbookAdmins(matchId: string, playerEmail: string): Promise<void> {
   const link = `/admin/partidos/${encodeURIComponent(matchId)}/inscripciones`;
   const title = "Sobrecupo pendiente de aprobación";
   const body = `El jugador ${playerEmail} pagó un cupo extra en el partido ${matchId}.`;
-  for (const adminEmail of getAllowedAdminEmails()) {
+  const match = await getMatchView(matchId);
+  const adminEmails = await adminEmailsForVenue(match?.venueId);
+  for (const adminEmail of adminEmails) {
     try {
       await createNotification({
         recipientEmail: adminEmail,
@@ -125,4 +152,25 @@ async function notifyPaid(email: string, matchId: string): Promise<void> {
   } catch (error) {
     logger.error("No se pudo enviar el email de pago", error, { email, matchId });
   }
+}
+
+async function adminEmailsForVenue(venueId: string | undefined): Promise<string[]> {
+  if (!venueId) return getAllowedAdminEmails();
+  try {
+    const users = await listAdminUsers();
+    const emails = users
+      .filter((user) => {
+        if (!user.active) return false;
+        if (user.role === "super_admin") return true;
+        if (user.role === "venue_admin") {
+          return adminUserVenueIds(user).includes(venueId);
+        }
+        return false;
+      })
+      .map((user) => user.email);
+    if (emails.length > 0) return emails;
+  } catch {
+    return getAllowedAdminEmails();
+  }
+  return getAllowedAdminEmails();
 }

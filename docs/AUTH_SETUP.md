@@ -167,7 +167,7 @@ Cuando estés listo para producción:
 
 1. En GCP, ir a **Pantalla de consentimiento de OAuth** → **Publicar la app**
 2. Si solo pides scopes básicos (`email`, `profile`, `openid`), Google aprueba automáticamente
-3. Si pides scopes sensibles (Drive, Calendar, etc.), Google requiere revisión manual (días/semanas)
+3. Si pides scopes sensibles (Drive, Calendar, etc.), Google requiere revisión manual (días/semanas). Para Calendar en canchaAbierta ver [`GOOGLE_CALENDAR_SETUP.md`](GOOGLE_CALENDAR_SETUP.md).
 
 ## 7. Troubleshooting
 

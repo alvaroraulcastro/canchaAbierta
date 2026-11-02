@@ -61,6 +61,8 @@ const HEADERS = {
     "level",
     "preferredPosition",
     "createdAt",
+    "calendarRefreshTokenEnc",
+    "calendarConnectedAt",
   ],
   Inscripciones: [
     "id",
@@ -74,6 +76,9 @@ const HEADERS = {
     "adminApproved",
     "createdAt",
     "updatedAt",
+    "checkedInAt",
+    "checkedInBy",
+    "calendarEventId",
   ],
   Notificaciones: [
     "id",
@@ -94,6 +99,7 @@ const HEADERS = {
     "before",
     "after",
   ],
+  AdminUsers: ["email", "role", "venueIds", "active", "updatedAt"],
 };
 
 const EXAMPLE_ROWS = {

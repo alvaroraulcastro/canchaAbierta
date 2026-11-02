@@ -24,10 +24,12 @@ export const NOTIFICATION_TYPE_VALUES = [
   "match_reminder",
 ] as const;
 export const AUDIT_ACTION_VALUES = ["create", "update", "delete"] as const;
-export const AUDIT_ENTITY_VALUES = ["venue", "court", "match", "inscription"] as const;
+export const AUDIT_ENTITY_VALUES = ["venue", "court", "match", "inscription", "admin_user"] as const;
+export const ADMIN_ROLE_VALUES = ["super_admin", "venue_admin", "support"] as const;
 
 export type PaymentStatus = (typeof PAYMENT_STATUS_VALUES)[number];
 export type NotificationType = (typeof NOTIFICATION_TYPE_VALUES)[number];
+export type AdminRole = (typeof ADMIN_ROLE_VALUES)[number];
 
 function pad(value: number): string {
   return String(value).padStart(2, "0");
@@ -160,6 +162,8 @@ export const playerSchema = z.object({
   level: optionalEnum(LEVEL_VALUES),
   preferredPosition: optionalText,
   createdAt: isoDate,
+  calendarRefreshTokenEnc: optionalText,
+  calendarConnectedAt: optionalText,
 });
 
 export const inscriptionSchema = z.object({
@@ -173,6 +177,17 @@ export const inscriptionSchema = z.object({
   overbookRequested: requiredBool,
   adminApproved: optionalBool,
   createdAt: isoDate,
+  updatedAt: isoDate,
+  checkedInAt: optionalText,
+  checkedInBy: optionalText,
+  calendarEventId: optionalText,
+});
+
+export const adminUserSchema = z.object({
+  email: requiredText,
+  role: requiredEnum(ADMIN_ROLE_VALUES),
+  venueIds: optionalText,
+  active: requiredBool,
   updatedAt: isoDate,
 });
 
@@ -204,6 +219,14 @@ export type Player = z.infer<typeof playerSchema>;
 export type Inscription = z.infer<typeof inscriptionSchema>;
 export type Notification = z.infer<typeof notificationSchema>;
 export type AuditEntry = z.infer<typeof auditSchema>;
+export type AdminUser = z.infer<typeof adminUserSchema>;
+
+export function parseVenueIdsCsv(raw: string): string[] {
+  return raw
+    .split(",")
+    .map((id) => id.trim())
+    .filter((id) => id.length > 0);
+}
 
 export function parseRows<S extends z.ZodTypeAny>(
   sheet: string,

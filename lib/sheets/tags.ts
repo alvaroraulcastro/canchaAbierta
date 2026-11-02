@@ -8,6 +8,7 @@ export const SHEET_NAMES = [
   "Inscripciones",
   "Notificaciones",
   "AdminAudit",
+  "AdminUsers",
 ] as const;
 
 export type SheetName = (typeof SHEET_NAMES)[number];
@@ -20,6 +21,7 @@ export const SHEET_TAGS = {
   Inscripciones: "inscriptions",
   Notificaciones: "notifications",
   AdminAudit: "audit",
+  AdminUsers: "admin-users",
 } as const;
 
 export const SHEET_TAG_VALUES = [
@@ -30,6 +32,7 @@ export const SHEET_TAG_VALUES = [
   "inscriptions",
   "notifications",
   "audit",
+  "admin-users",
 ] as const;
 
 export type SheetTag = (typeof SHEET_TAG_VALUES)[number];
