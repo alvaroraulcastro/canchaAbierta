@@ -52,5 +52,31 @@ export async function upsertPlayerProfile(input: PlayerProfileInput): Promise<vo
     values.level,
     values.preferredPosition,
     now,
+    "",
+    "",
   ]);
+}
+
+export async function setPlayerCalendarTokens(input: {
+  email: string;
+  refreshTokenEnc: string;
+}): Promise<void> {
+  const email = input.email.trim().toLowerCase();
+  const row = await findSheetRowByColumn("Jugadores", "email", email);
+  if (!row) throw new Error("Jugador no encontrado");
+  const now = new Date().toISOString();
+  await updateSheetRow("Jugadores", row.rowNumber, row.headers, {
+    calendarRefreshTokenEnc: input.refreshTokenEnc,
+    calendarConnectedAt: now,
+  });
+}
+
+export async function clearPlayerCalendarTokens(email: string): Promise<void> {
+  const normalized = email.trim().toLowerCase();
+  const row = await findSheetRowByColumn("Jugadores", "email", normalized);
+  if (!row) return;
+  await updateSheetRow("Jugadores", row.rowNumber, row.headers, {
+    calendarRefreshTokenEnc: "",
+    calendarConnectedAt: "",
+  });
 }

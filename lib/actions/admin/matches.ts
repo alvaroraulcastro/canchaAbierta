@@ -5,7 +5,8 @@ import { fromZonedTime } from "date-fns-tz";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { getAdminSession } from "@/lib/auth/require-admin";
+import { requireAdminPermission, requireVenueAccess } from "@/lib/auth/require-admin";
+import { getMatchView } from "@/lib/catalog";
 import { rethrowNavigationError } from "@/lib/rethrow-navigation";
 import { sendEmail } from "@/lib/email/client";
 import { createLogger } from "@/lib/logger";
@@ -35,8 +36,7 @@ function parseSantiagoLocal(value: string): string {
 }
 
 export async function createMatch(formData: FormData): Promise<void> {
-  const admin = await getAdminSession();
-  if (!admin) throw new Error("No autorizado");
+  const admin = await requireAdminPermission("matches_write");
 
   const parsed = matchFormSchema.safeParse({
     courtId: formData.get("courtId"),
@@ -52,6 +52,7 @@ export async function createMatch(formData: FormData): Promise<void> {
 
   const court = await getCourt(parsed.data.courtId);
   if (!court || !court.active) throw new Error("Cancha no disponible");
+  await requireVenueAccess(court.venueId);
 
   const id = randomUUID();
   const now = new Date().toISOString();
@@ -98,8 +99,7 @@ const statusSchema = z.object({
 });
 
 export async function setMatchStatus(formData: FormData): Promise<void> {
-  const admin = await getAdminSession();
-  if (!admin) throw new Error("No autorizado");
+  const admin = await requireAdminPermission("matches_write");
 
   const parsed = statusSchema.safeParse({
     matchId: formData.get("matchId"),
@@ -108,6 +108,10 @@ export async function setMatchStatus(formData: FormData): Promise<void> {
   if (!parsed.success) {
     throw new Error(parsed.error.errors[0]?.message ?? "Datos inválidos");
   }
+
+  const matchView = await getMatchView(parsed.data.matchId);
+  if (!matchView) throw new Error("Partido no encontrado");
+  await requireVenueAccess(matchView.venueId);
 
   try {
     const before = await updateMatchFields(parsed.data.matchId, { status: parsed.data.status });

@@ -14,6 +14,7 @@ export default async function AccountPage() {
   const links = [
     { href: "/cuenta/perfil", label: "Perfil de jugador" },
     { href: "/cuenta/mis-inscripciones", label: "Mis inscripciones" },
+    { href: "/cuenta/integraciones", label: "Integraciones" },
     { href: "/cuenta/notificaciones", label: "Notificaciones" },
   ] as const;
 

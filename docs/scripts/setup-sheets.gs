@@ -1,4 +1,4 @@
-const ORDER = ["Venues", "Canchas", "Partidos", "Jugadores", "Inscripciones", "Notificaciones", "AdminAudit"];
+const ORDER = ["Venues", "Canchas", "Partidos", "Jugadores", "Inscripciones", "Notificaciones", "AdminAudit", "AdminUsers"];
 
 const HEADERS = {
   Venues: ["id", "name", "address", "lat", "lng", "contactPhone", "photoUrl", "active"],
@@ -16,7 +16,7 @@ const HEADERS = {
     "createdBy",
     "createdAt",
   ],
-  Jugadores: ["email", "name", "phone", "level", "preferredPosition", "createdAt"],
+  Jugadores: ["email", "name", "phone", "level", "preferredPosition", "createdAt", "calendarRefreshTokenEnc", "calendarConnectedAt"],
   Inscripciones: [
     "id",
     "matchId",
@@ -29,6 +29,9 @@ const HEADERS = {
     "adminApproved",
     "createdAt",
     "updatedAt",
+    "checkedInAt",
+    "checkedInBy",
+    "calendarEventId",
   ],
   Notificaciones: [
     "id",
@@ -41,6 +44,7 @@ const HEADERS = {
     "createdAt",
   ],
   AdminAudit: ["timestamp", "adminEmail", "action", "entity", "entityId", "before", "after"],
+  AdminUsers: ["email", "role", "venueIds", "active", "updatedAt"],
 };
 
 const ENUMS = {
@@ -57,7 +61,8 @@ const ENUMS = {
     "match_reminder",
   ],
   action: ["create", "update", "delete"],
-  entity: ["venue", "court", "match", "inscription"],
+  entity: ["venue", "court", "match", "inscription", "admin_user"],
+  role: ["super_admin", "venue_admin", "support"],
 };
 
 const TEXT_FIELDS = ["dateTime", "createdAt", "timestamp", "updatedAt"];

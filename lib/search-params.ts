@@ -129,3 +129,47 @@ export function parseInscriptionsSearchParams(params: SearchParams): Inscription
     cancelError,
   };
 }
+
+export type IntegracionesSearchParams = {
+  connectedNotice: boolean;
+  disconnectedNotice: boolean;
+};
+
+export function parseIntegracionesSearchParams(params: SearchParams): IntegracionesSearchParams {
+  return {
+    connectedNotice: readSearchParam(params.connected) === "1",
+    disconnectedNotice: readSearchParam(params.disconnected) === "1",
+  };
+}
+
+const isoDaySchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Fecha inválida")
+  .optional();
+
+export type ReportsSearchParams = {
+  venueId: string | null;
+  from: string;
+  to: string;
+};
+
+export function parseReportsSearchParams(params: SearchParams): ReportsSearchParams {
+  const fromParsed = isoDaySchema.safeParse(readSearchParam(params.from));
+  const toParsed = isoDaySchema.safeParse(readSearchParam(params.to));
+  const now = new Date();
+  const defaultTo = now.toISOString().slice(0, 10);
+  const defaultFromDate = new Date(now);
+  defaultFromDate.setDate(defaultFromDate.getDate() - 30);
+  const defaultFrom = defaultFromDate.toISOString().slice(0, 10);
+  return {
+    venueId: readSearchParam(params.venueId) ?? null,
+    from: fromParsed.success && fromParsed.data ? fromParsed.data : defaultFrom,
+    to: toParsed.success && toParsed.data ? toParsed.data : defaultTo,
+  };
+}
+
+export function reportsRangeMs(from: string, to: string): { fromMs: number; toMs: number } {
+  const fromMs = Date.parse(`${from}T00:00:00-03:00`);
+  const toMs = Date.parse(`${to}T23:59:59-03:00`);
+  return { fromMs, toMs };
+}

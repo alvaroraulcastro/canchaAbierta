@@ -129,7 +129,7 @@ canchaAbierta/
 │   │   ├── read.ts                # helper generico de lectura por hoja
 │   │   ├── mutate.ts              # helper generico de escritura por hoja
 │   │   ├── tags.ts                # SHEET_TAGS + matchTag()/inscriptionsTag()
-│   │   ├── schemas.ts             # Zod espejo de las 7 hojas
+│   │   ├── schemas.ts             # Zod espejo de las 8 hojas
 │   │   └── repos/                 # 1 archivo por hoja:
 │   │       ├── venues.ts          # listVenues, getVenue, upsertVenue, ...
 │   │       ├── courts.ts
@@ -231,6 +231,7 @@ Lista canonica con descripcion inline en [`.env.example`](../.env.example). **17
 | `npm run start` | Servidor de produccion local |
 | `npm run lint` | ESLint (config Next) |
 | `npm run typecheck` | `tsc --noEmit` |
+| `npm run test:unit` | Tests unitarios mínimos (p. ej. firma QR check-in) |
 
 `npm run test:e2e` se agregara cuando se configure Playwright en Fase 4.
 
@@ -270,15 +271,16 @@ Otras skills utiles segun la tarea:
 
 ## 9. Modelo de Sheets (resumen)
 
-7 hojas en este orden exacto:
+8 hojas en este orden exacto:
 
 1. **Venues** — complejos deportivos. PK `id` (slug).
 2. **Canchas** — FK a `Venues.id`; tiene `sport` (`padel`|`babyfutbol`), `capacity`, `priceCLP`.
 3. **Partidos** — FK a `Canchas.id`; tiene `dateTime` (ISO), `maxPlayers`, `currentPlayers` (denormalizado, lo actualiza el webhook), `allowOverbook`, `requiresExtraConfirmation`, `status` (`open`|`closed`|`cancelled`|`completed`).
-4. **Jugadores** — PK `email` (viene de Google OAuth). Campos: `name`, `phone`, `level`, `preferredPosition`, `createdAt`.
-5. **Inscripciones** — FK a `Partidos.id` y `Jugadores.email`; `paymentStatus` (`pending`|`paid`|`failed`|`refunded`|`cancelled`), `flowToken`, `flowOrderId`, `overbookRequested`, `adminApproved`.
-6. **Notificaciones** — in-app para jugadores. `type` enum: `inscription_confirmed`, `payment_received`, `match_cancelled`, `overbook_pending`, `overbook_approved`, `match_reminder`.
-7. **AdminAudit** — log de cambios del admin. `action` (`create`|`update`|`delete`), `entity` (`venue`|`court`|`match`|`inscription`), `before`/`after` JSON string.
+4. **Jugadores** — PK `email` (viene de Google OAuth). Campos: `name`, `phone`, `level`, `preferredPosition`, `createdAt`, `calendarRefreshTokenEnc`, `calendarConnectedAt`.
+5. **Inscripciones** — FK a `Partidos.id` y `Jugadores.email`; `paymentStatus`, Flow ids, sobrecupo, `checkedInAt`, `checkedInBy`, `calendarEventId`.
+6. **Notificaciones** — in-app para jugadores.
+7. **AdminAudit** — log de cambios del admin.
+8. **AdminUsers** — admins con `role`, `venueIds`, `active`.
 
 Detalle completo (columnas, tipos, notas) en [`docs/PLAN.md`](../docs/PLAN.md) §4.
 
@@ -331,9 +333,7 @@ Localizado en `app/api/flow/webhook/route.ts`. Pasos:
 
 ## 11. Estado del proyecto
 
-**Fase 4 — Endurecimiento (en curso).** Completados: validaciones Zod en todos los inputs, error boundaries por segmento, loading states, logging estructurado, y accesibilidad.
-
-**Pendiente:** tests E2E con Playwright, pase de Flow sandbox a producción, y verificación de Google OAuth.
+**Fase 5 — Calendar, QR, roles y reportes (completada).** Pendiente operativo: tests E2E ampliados, Flow prod, OAuth prod. Detalles y checklist completo en [`docs/PLAN.md`](../docs/PLAN.md) §8.
 
 Detalles y checklist completo en [`docs/PLAN.md`](../docs/PLAN.md) §8.
 

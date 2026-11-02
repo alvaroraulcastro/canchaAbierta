@@ -56,6 +56,7 @@ export default async function AdminMatchInscriptionsPage({ params, searchParams 
                   {row.overbookRequested ? " · sobrecupo" : ""}
                   {row.adminApproved === true ? " · aprobado" : ""}
                   {row.adminApproved === false ? " · rechazado" : ""}
+                  {row.checkedInAt ? " · ingresó" : ""}
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">

@@ -3,10 +3,10 @@
 import { revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { getAdminSession } from "@/lib/auth/require-admin";
+import { requireAdminPermission, requireVenueAccess } from "@/lib/auth/require-admin";
 import { rethrowNavigationError } from "@/lib/rethrow-navigation";
 import { appendAuditEntry } from "@/lib/sheets/repos/audit";
-import { deactivateCourt, upsertCourt } from "@/lib/sheets/repos/courts";
+import { deactivateCourt, getCourt, upsertCourt } from "@/lib/sheets/repos/courts";
 import { getVenue } from "@/lib/sheets/repos/venues";
 import { zFormCheckbox, zFormOptionalString, zFormString } from "@/lib/form-data";
 import { SPORT_VALUES } from "@/lib/sheets/schemas";
@@ -30,8 +30,7 @@ const courtFormSchema = z.object({
 });
 
 export async function saveCourt(formData: FormData): Promise<void> {
-  const admin = await getAdminSession();
-  if (!admin) throw new Error("No autorizado");
+  const admin = await requireAdminPermission("courts_write");
 
   const parsed = courtFormSchema.safeParse({
     id: formData.get("id"),
@@ -49,6 +48,7 @@ export async function saveCourt(formData: FormData): Promise<void> {
 
   const venue = await getVenue(parsed.data.venueId);
   if (!venue) throw new Error("El complejo no existe");
+  await requireVenueAccess(parsed.data.venueId);
 
   const input = {
     id: parsed.data.id,
@@ -82,11 +82,14 @@ export async function saveCourt(formData: FormData): Promise<void> {
 }
 
 export async function deleteCourt(formData: FormData): Promise<void> {
-  const admin = await getAdminSession();
-  if (!admin) throw new Error("No autorizado");
+  const admin = await requireAdminPermission("courts_write");
 
   const id = String(formData.get("id") ?? "").trim();
   if (!id) throw new Error("Falta el id de la cancha");
+
+  const existing = await getCourt(id);
+  if (!existing) throw new Error("Cancha no encontrada");
+  await requireVenueAccess(existing.venueId);
 
   try {
     const before = await deactivateCourt(id);

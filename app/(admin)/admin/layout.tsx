@@ -17,7 +17,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <h1 className="text-3xl font-semibold tracking-tight">Panel admin</h1>
         <p className="text-sm text-muted">{admin.email}</p>
       </div>
-      <AdminNav />
+      <AdminNav admin={admin} />
       {children}
     </main>
   );

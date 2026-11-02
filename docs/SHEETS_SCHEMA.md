@@ -13,6 +13,7 @@ Nombres **exactos** (case-sensitive, sin tildes, sin espacios). En este orden:
 5. `Inscripciones`
 6. `Notificaciones`
 7. `AdminAudit`
+8. `AdminUsers`
 
 ## Headers por hoja
 
@@ -60,7 +61,7 @@ match-001 | court-padel-1 | 2026-09-30T19:00:00-03:00 | 90 | 4 | 0 | FALSE | FAL
 ### `Jugadores`
 
 ```
-email | name | phone | level | preferredPosition | createdAt
+email | name | phone | level | preferredPosition | createdAt | calendarRefreshTokenEnc | calendarConnectedAt
 ```
 
 Ejemplo:
@@ -72,7 +73,7 @@ jugador1@gmail.com | Camila Soto | +56 9 8765 4321 | intermedio | mediocampista 
 ### `Inscripciones`
 
 ```
-id | matchId | playerEmail | amountCLP | paymentStatus | flowToken | flowOrderId | overbookRequested | adminApproved | createdAt | updatedAt
+id | matchId | playerEmail | amountCLP | paymentStatus | flowToken | flowOrderId | overbookRequested | adminApproved | createdAt | updatedAt | checkedInAt | checkedInBy | calendarEventId
 ```
 
 Ejemplo:
@@ -115,6 +116,16 @@ Ejemplo (al crear la cancha):
 ```
 
 `before` y `after` son **JSON serializado en string** (Sheets no tiene tipo JSON nativo). El backend los serializa con `JSON.stringify` al escribir y `JSON.parse` al leer.
+
+### `AdminUsers`
+
+```
+email | role | venueIds | active | updatedAt
+```
+
+- `role`: `super_admin` | `venue_admin` | `support`
+- `venueIds`: CSV de `Venues.id` (vacío para `super_admin`)
+- Migración inicial: emails en `ALLOWED_ADMIN_EMAILS` pueden copiarse como `super_admin` activos
 
 ## Cómo crear las hojas
 
