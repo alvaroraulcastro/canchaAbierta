@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { deleteCourt, saveCourt } from "@/lib/actions/admin/courts";
+import { AdminFormAlerts } from "@/components/admin/admin-form-alerts";
 import { listCourtViews } from "@/lib/catalog";
+import { filterVenueIdsForAdmin } from "@/lib/auth/permissions";
+import { getAdminSession } from "@/lib/auth/require-admin";
+import { pricePerPlayerCLP } from "@/lib/pricing";
 import { listVenues } from "@/lib/sheets/repos/venues";
 import { getCourt } from "@/lib/sheets/repos/courts";
 import { formatCLP, sportLabel } from "@/lib/format";
@@ -9,6 +13,8 @@ import { parseAdminCourtsSearchParams, type SearchParams } from "@/lib/search-pa
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SheetsNotice } from "@/components/sheets-notice";
+import { sheetsConfigured } from "@/lib/sheets/client";
 
 export const metadata: Metadata = {
   title: "Canchas",
@@ -20,18 +26,49 @@ type PageProps = {
 
 export default async function AdminCourtsPage({ searchParams }: PageProps) {
   const sp = parseAdminCourtsSearchParams(await searchParams);
-  const [courts, venues, editing] = await Promise.all([
-    listCourtViews(),
-    listVenues(),
-    sp.edit ? getCourt(sp.edit) : Promise.resolve(null),
-  ]);
+  const admin = await getAdminSession();
+  if (!admin) return null;
 
-  const activeVenues = venues.filter((venue) => venue.active);
+  if (!sheetsConfigured()) {
+    return <SheetsNotice />;
+  }
+
+  let courts;
+  let venues;
+  let editing = null;
+  try {
+    [courts, venues, editing] = await Promise.all([
+      listCourtViews(),
+      listVenues(),
+      sp.edit ? getCourt(sp.edit) : Promise.resolve(null),
+    ]);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "No se pudo cargar el Sheets";
+    return (
+      <p className="rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive" role="alert">
+        {message}
+      </p>
+    );
+  }
+
+  const allowedVenueIds = new Set(
+    filterVenueIdsForAdmin(
+      admin,
+      venues.map((venue) => venue.id),
+    ),
+  );
+  const activeVenues = venues.filter((venue) => venue.active && allowedVenueIds.has(venue.id));
+  const visibleCourts = courts.filter((court) => allowedVenueIds.has(court.venueId));
 
   return (
     <div className="flex flex-col gap-8">
-      {sp.ok ? (
-        <p className="rounded-xl bg-brand-100 px-3 py-2 text-sm text-brand-950">Cambios guardados.</p>
+      <AdminFormAlerts ok={sp.ok} error={sp.error} />
+
+      {activeVenues.length === 0 ? (
+        <p className="rounded-xl border border-line bg-card px-4 py-3 text-sm text-muted">
+          No hay complejos activos asignados a tu usuario. Revisa la hoja Venues o tu fila en AdminUsers
+          (venueIds).
+        </p>
       ) : null}
 
       <Card>
@@ -51,6 +88,7 @@ export default async function AdminCourtsPage({ searchParams }: PageProps) {
                 required
                 defaultValue={editing?.venueId ?? activeVenues[0]?.id ?? ""}
                 className="h-10 rounded-xl border border-line bg-card px-3 text-sm"
+                disabled={activeVenues.length === 0}
               >
                 {activeVenues.map((venue) => (
                   <option key={venue.id} value={venue.id}>
@@ -76,7 +114,7 @@ export default async function AdminCourtsPage({ searchParams }: PageProps) {
             </label>
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="flex flex-col gap-1 text-sm">
-                Cupos
+                Capacidad referencial
                 <Input
                   name="capacity"
                   type="number"
@@ -86,7 +124,7 @@ export default async function AdminCourtsPage({ searchParams }: PageProps) {
                 />
               </label>
               <label className="flex flex-col gap-1 text-sm">
-                Precio CLP
+                Arriendo total (CLP)
                 <Input
                   name="priceCLP"
                   type="number"
@@ -96,9 +134,12 @@ export default async function AdminCourtsPage({ searchParams }: PageProps) {
                 />
               </label>
             </div>
+            <p className="text-xs text-muted">
+              El precio por jugador se calcula al publicar el partido: arriendo total ÷ cupos del partido.
+            </p>
             <label className="flex flex-col gap-1 text-sm">
-              Foto (URL)
-              <Input name="photoUrl" type="url" defaultValue={editing?.photoUrl ?? ""} />
+              Foto (URL opcional)
+              <Input name="photoUrl" type="text" defaultValue={editing?.photoUrl ?? ""} placeholder="https://..." />
             </label>
             <label className="flex items-center gap-2 text-sm">
               <input
@@ -109,7 +150,9 @@ export default async function AdminCourtsPage({ searchParams }: PageProps) {
               />
               Activa
             </label>
-            <Button type="submit">{editing ? "Guardar cambios" : "Crear cancha"}</Button>
+            <Button type="submit" disabled={activeVenues.length === 0}>
+              {editing ? "Guardar cambios" : "Crear cancha"}
+            </Button>
             {editing ? (
               <Link href="/admin/canchas" className="text-center text-sm text-muted hover:underline">
                 Cancelar edición
@@ -122,7 +165,7 @@ export default async function AdminCourtsPage({ searchParams }: PageProps) {
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">Canchas registradas</h2>
         <ul className="flex flex-col gap-2">
-          {courts.map((court) => (
+          {visibleCourts.map((court) => (
             <li
               key={court.id}
               className="flex flex-col gap-2 rounded-2xl border border-line bg-card p-4 sm:flex-row sm:items-center sm:justify-between"
@@ -130,7 +173,12 @@ export default async function AdminCourtsPage({ searchParams }: PageProps) {
               <div>
                 <p className="font-medium">{court.name}</p>
                 <p className="text-sm text-muted">
-                  {court.id} · {court.venueName} · {sportLabel(court.sport)} · {formatCLP(court.priceCLP)}
+                  {court.id} · {court.venueName} · {sportLabel(court.sport)} · {formatCLP(court.priceCLP)}{" "}
+                  arriendo
+                </p>
+                <p className="text-sm text-muted">
+                  Referencia {court.capacity} jugadores →{" "}
+                  {formatCLP(pricePerPlayerCLP(court.priceCLP, court.capacity))} c/u
                 </p>
                 <p className="text-sm">{court.active ? "Activa" : "Inactiva"}</p>
               </div>

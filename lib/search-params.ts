@@ -68,11 +68,16 @@ const adminFlagSchema = z.string().trim().max(10).optional();
 
 export type AdminOkSearchParams = {
   ok?: string;
+  error?: string;
 };
 
 export function parseAdminOkSearchParams(params: SearchParams): AdminOkSearchParams {
   const ok = adminFlagSchema.safeParse(readSearchParam(params.ok));
-  return { ok: ok.success ? ok.data : undefined };
+  const error = z.string().trim().max(500).optional().safeParse(readSearchParam(params.error));
+  return {
+    ok: ok.success ? ok.data : undefined,
+    error: error.success ? error.data : undefined,
+  };
 }
 
 export type AdminCourtsSearchParams = {
@@ -84,7 +89,7 @@ export type AdminCourtsSearchParams = {
 export function parseAdminCourtsSearchParams(params: SearchParams): AdminCourtsSearchParams {
   const edit = z.string().trim().max(200).optional().safeParse(readSearchParam(params.edit));
   const ok = adminFlagSchema.safeParse(readSearchParam(params.ok));
-  const error = z.string().trim().max(200).optional().safeParse(readSearchParam(params.error));
+  const error = z.string().trim().max(500).optional().safeParse(readSearchParam(params.error));
   return {
     edit: edit.success ? edit.data : undefined,
     ok: ok.success ? ok.data : undefined,

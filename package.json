@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test:unit": "tsx tests/unit/check-in-sign.test.ts",
+    "test:unit": "tsx tests/unit/check-in-sign.test.ts && tsx tests/unit/pricing.test.ts",
     "test:e2e": "playwright test"
   },
   "dependencies": {

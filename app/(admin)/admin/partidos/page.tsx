@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { createMatch, setMatchStatus } from "@/lib/actions/admin/matches";
 import { listMatchViews } from "@/lib/catalog";
+import { AdminFormAlerts } from "@/components/admin/admin-form-alerts";
+import { filterVenueIdsForAdmin } from "@/lib/auth/permissions";
+import { getAdminSession } from "@/lib/auth/require-admin";
 import { listCourts } from "@/lib/sheets/repos/courts";
 import { formatCLP, matchStatusLabel, sportLabel, spotsLabel } from "@/lib/format";
 import { parseAdminOkSearchParams, type SearchParams } from "@/lib/search-params";
@@ -20,14 +23,24 @@ type PageProps = {
 
 export default async function AdminMatchesPage({ searchParams }: PageProps) {
   const sp = parseAdminOkSearchParams(await searchParams);
+  const admin = await getAdminSession();
+  if (!admin) return null;
+
   const [matches, courts] = await Promise.all([listMatchViews(), listCourts()]);
-  const activeCourts = courts.filter((court) => court.active);
+  const allowedVenueIds = new Set(
+    filterVenueIdsForAdmin(
+      admin,
+      matches.map((match) => match.venueId),
+    ),
+  );
+  const activeCourts = courts.filter(
+    (court) => court.active && allowedVenueIds.has(court.venueId),
+  );
+  const visibleMatches = matches.filter((match) => allowedVenueIds.has(match.venueId));
 
   return (
     <div className="flex flex-col gap-8">
-      {sp.ok ? (
-        <p className="rounded-xl bg-brand-100 px-3 py-2 text-sm text-brand-950">Cambios guardados.</p>
-      ) : null}
+      <AdminFormAlerts ok={sp.ok} error={sp.error} />
 
       <Card>
         <CardHeader>
@@ -45,7 +58,7 @@ export default async function AdminMatchesPage({ searchParams }: PageProps) {
               >
                 {activeCourts.map((court) => (
                   <option key={court.id} value={court.id}>
-                    {court.name} ({sportLabel(court.sport)}) — {formatCLP(court.priceCLP)}
+                    {court.name} ({sportLabel(court.sport)}) — {formatCLP(court.priceCLP)} arriendo
                   </option>
                 ))}
               </select>
@@ -76,7 +89,12 @@ export default async function AdminMatchesPage({ searchParams }: PageProps) {
               />
               Requiere confirmación extra (sobrecupo)
             </label>
-            <Button type="submit">Publicar partido</Button>
+            <p className="text-xs text-muted">
+              Precio por jugador = arriendo de la cancha ÷ cupos máximos del partido.
+            </p>
+            <Button type="submit" disabled={activeCourts.length === 0}>
+              Publicar partido
+            </Button>
           </form>
         </CardContent>
       </Card>
@@ -84,7 +102,7 @@ export default async function AdminMatchesPage({ searchParams }: PageProps) {
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">Partidos</h2>
         <ul className="flex flex-col gap-3">
-          {matches.map((match) => (
+          {visibleMatches.map((match) => (
             <li key={match.id} className="rounded-2xl border border-line bg-card p-4">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div>
@@ -94,7 +112,7 @@ export default async function AdminMatchesPage({ searchParams }: PageProps) {
                   </p>
                   <p className="text-sm">
                     {matchStatusLabel(match.status)} · {spotsLabel(match.currentPlayers, match.maxPlayers)} ·{" "}
-                    {formatCLP(match.priceCLP)}
+                    {formatCLP(match.priceCLP)} c/u ({formatCLP(match.courtTotalPriceCLP)} arriendo)
                   </p>
                 </div>
                 <Link

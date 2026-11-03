@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireAdminPermission, requireVenueAccess } from "@/lib/auth/require-admin";
 import { getMatchView } from "@/lib/catalog";
+import { redirectAdminFormError } from "@/lib/actions/admin/form-error";
 import { rethrowNavigationError } from "@/lib/rethrow-navigation";
 import { sendEmail } from "@/lib/email/client";
 import { createLogger } from "@/lib/logger";
@@ -47,12 +48,19 @@ export async function createMatch(formData: FormData): Promise<void> {
     requiresExtraConfirmation: formData.get("requiresExtraConfirmation"),
   });
   if (!parsed.success) {
-    throw new Error(parsed.error.errors[0]?.message ?? "Datos inválidos");
+    redirectAdminFormError("/admin/partidos", parsed.error.errors[0]?.message ?? "Datos inválidos");
   }
 
   const court = await getCourt(parsed.data.courtId);
-  if (!court || !court.active) throw new Error("Cancha no disponible");
-  await requireVenueAccess(court.venueId);
+  if (!court || !court.active) redirectAdminFormError("/admin/partidos", "Cancha no disponible");
+  try {
+    await requireVenueAccess(court.venueId);
+  } catch (error) {
+    redirectAdminFormError(
+      "/admin/partidos",
+      error instanceof Error ? error.message : "Sin acceso al complejo",
+    );
+  }
 
   const id = randomUUID();
   const now = new Date().toISOString();
@@ -88,7 +96,7 @@ export async function createMatch(formData: FormData): Promise<void> {
   } catch (error) {
     rethrowNavigationError(error);
     const message = error instanceof Error ? error.message : "No se pudo crear el partido";
-    throw new Error(message);
+    redirectAdminFormError("/admin/partidos", message);
   }
   redirect("/admin/partidos?ok=1");
 }
@@ -106,12 +114,19 @@ export async function setMatchStatus(formData: FormData): Promise<void> {
     status: formData.get("status"),
   });
   if (!parsed.success) {
-    throw new Error(parsed.error.errors[0]?.message ?? "Datos inválidos");
+    redirectAdminFormError("/admin/partidos", parsed.error.errors[0]?.message ?? "Datos inválidos");
   }
 
   const matchView = await getMatchView(parsed.data.matchId);
-  if (!matchView) throw new Error("Partido no encontrado");
-  await requireVenueAccess(matchView.venueId);
+  if (!matchView) redirectAdminFormError("/admin/partidos", "Partido no encontrado");
+  try {
+    await requireVenueAccess(matchView.venueId);
+  } catch (error) {
+    redirectAdminFormError(
+      "/admin/partidos",
+      error instanceof Error ? error.message : "Sin acceso al complejo",
+    );
+  }
 
   try {
     const before = await updateMatchFields(parsed.data.matchId, { status: parsed.data.status });
@@ -136,7 +151,7 @@ export async function setMatchStatus(formData: FormData): Promise<void> {
   } catch (error) {
     rethrowNavigationError(error);
     const message = error instanceof Error ? error.message : "No se pudo actualizar el partido";
-    throw new Error(message);
+    redirectAdminFormError("/admin/partidos", message);
   }
   redirect(`/admin/partidos?ok=1`);
 }

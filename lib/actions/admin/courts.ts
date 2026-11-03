@@ -4,6 +4,7 @@ import { revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireAdminPermission, requireVenueAccess } from "@/lib/auth/require-admin";
+import { redirectAdminFormError } from "@/lib/actions/admin/form-error";
 import { rethrowNavigationError } from "@/lib/rethrow-navigation";
 import { appendAuditEntry } from "@/lib/sheets/repos/audit";
 import { deactivateCourt, getCourt, upsertCourt } from "@/lib/sheets/repos/courts";
@@ -25,12 +26,20 @@ const courtFormSchema = z.object({
   sport: z.enum(SPORT_VALUES),
   capacity: z.coerce.number().int().min(2).max(30),
   priceCLP: z.coerce.number().int().min(0),
-  photoUrl: zFormOptionalString.pipe(z.string().max(500).optional()),
+  photoUrl: zFormOptionalString.pipe(z.string().max(500)),
   active: zFormCheckbox,
 });
 
 export async function saveCourt(formData: FormData): Promise<void> {
-  const admin = await requireAdminPermission("courts_write");
+  let admin;
+  try {
+    admin = await requireAdminPermission("courts_write");
+  } catch (error) {
+    redirectAdminFormError(
+      "/admin/canchas",
+      error instanceof Error ? error.message : "No autorizado",
+    );
+  }
 
   const parsed = courtFormSchema.safeParse({
     id: formData.get("id"),
@@ -43,12 +52,19 @@ export async function saveCourt(formData: FormData): Promise<void> {
     active: formData.get("active"),
   });
   if (!parsed.success) {
-    throw new Error(parsed.error.errors[0]?.message ?? "Datos inválidos");
+    redirectAdminFormError("/admin/canchas", parsed.error.errors[0]?.message ?? "Datos inválidos");
   }
 
   const venue = await getVenue(parsed.data.venueId);
-  if (!venue) throw new Error("El complejo no existe");
-  await requireVenueAccess(parsed.data.venueId);
+  if (!venue) redirectAdminFormError("/admin/canchas", "El complejo no existe");
+  try {
+    await requireVenueAccess(parsed.data.venueId);
+  } catch (error) {
+    redirectAdminFormError(
+      "/admin/canchas",
+      error instanceof Error ? error.message : "Sin acceso al complejo",
+    );
+  }
 
   const input = {
     id: parsed.data.id,
@@ -76,24 +92,39 @@ export async function saveCourt(formData: FormData): Promise<void> {
   } catch (error) {
     rethrowNavigationError(error);
     const message = error instanceof Error ? error.message : "No se pudo guardar la cancha";
-    throw new Error(message);
+    redirectAdminFormError("/admin/canchas", message);
   }
   redirect("/admin/canchas?ok=1");
 }
 
 export async function deleteCourt(formData: FormData): Promise<void> {
-  const admin = await requireAdminPermission("courts_write");
+  let admin;
+  try {
+    admin = await requireAdminPermission("courts_write");
+  } catch (error) {
+    redirectAdminFormError(
+      "/admin/canchas",
+      error instanceof Error ? error.message : "No autorizado",
+    );
+  }
 
   const id = String(formData.get("id") ?? "").trim();
-  if (!id) throw new Error("Falta el id de la cancha");
+  if (!id) redirectAdminFormError("/admin/canchas", "Falta el id de la cancha");
 
   const existing = await getCourt(id);
-  if (!existing) throw new Error("Cancha no encontrada");
-  await requireVenueAccess(existing.venueId);
+  if (!existing) redirectAdminFormError("/admin/canchas", "Cancha no encontrada");
+  try {
+    await requireVenueAccess(existing.venueId);
+  } catch (error) {
+    redirectAdminFormError(
+      "/admin/canchas",
+      error instanceof Error ? error.message : "Sin acceso al complejo",
+    );
+  }
 
   try {
     const before = await deactivateCourt(id);
-    if (!before) throw new Error("Cancha no encontrada");
+    if (!before) redirectAdminFormError("/admin/canchas", "Cancha no encontrada");
     await appendAuditEntry({
       adminEmail: admin.email,
       action: "delete",
@@ -107,7 +138,7 @@ export async function deleteCourt(formData: FormData): Promise<void> {
   } catch (error) {
     rethrowNavigationError(error);
     const message = error instanceof Error ? error.message : "No se pudo desactivar la cancha";
-    throw new Error(message);
+    redirectAdminFormError("/admin/canchas", message);
   }
   redirect("/admin/canchas?ok=1");
 }

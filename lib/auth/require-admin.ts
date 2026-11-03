@@ -13,12 +13,26 @@ export type AdminSession = ResolvedAdmin & {
 
 export async function getAdminSession(): Promise<AdminSession | null> {
   const session = await auth();
-  if (!session?.user?.email || !session.user.isAdmin || !session.user.adminRole) return null;
+  if (!session?.user?.email || !session.user.isAdmin) return null;
+
+  if (session.user.adminRole) {
+    return {
+      email: session.user.email,
+      name: session.user.name ?? null,
+      role: session.user.adminRole,
+      venueIds: session.user.adminVenueIds ?? [],
+      active: true,
+    };
+  }
+
+  const { resolveAdmin } = await import("@/lib/auth/resolve-admin");
+  const resolved = await resolveAdmin(session.user.email);
+  if (!resolved) return null;
   return {
     email: session.user.email,
     name: session.user.name ?? null,
-    role: session.user.adminRole,
-    venueIds: session.user.adminVenueIds ?? [],
+    role: resolved.role,
+    venueIds: resolved.venueIds,
     active: true,
   };
 }

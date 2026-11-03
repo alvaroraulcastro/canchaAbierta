@@ -64,7 +64,8 @@ export default async function CourtPage({ params }: { params: Promise<{ id: stri
           {court.venueAddress ? ` · ${court.venueAddress}` : ""}
         </p>
         <p>
-          {formatCLP(court.priceCLP)} por jugador · {court.capacity} jugadores
+          {formatCLP(court.priceCLP)} arriendo · hasta {court.capacity} jugadores (precio final según
+          cupos del partido)
         </p>
       </header>
       <section className="flex flex-col gap-4">
