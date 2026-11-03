@@ -3,12 +3,12 @@ import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 import { revalidateTag } from "next/cache";
 import { authConfig } from "@/lib/auth/auth.config";
+import { applyAdminSessionFromToken } from "@/lib/auth/session-from-token";
 import { sealSecret } from "@/lib/crypto/seal";
 import { resolveAdmin } from "@/lib/auth/resolve-admin";
 import { isE2eMockEnabled } from "@/lib/e2e/env";
 import { setPlayerCalendarTokens } from "@/lib/sheets/repos/players";
 import { SHEET_TAGS } from "@/lib/sheets/tags";
-import type { AdminRole } from "@/lib/sheets/schemas";
 
 const googleCalendar = Google({
   id: "google-calendar",
@@ -72,15 +72,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return token;
     },
     session({ session, token }) {
-      if (session.user) {
-        session.user.isAdmin = Boolean(token.isAdmin);
-        const role = token.adminRole as AdminRole | null | undefined;
-        session.user.adminRole = role ?? null;
-        session.user.adminVenueIds = Array.isArray(token.adminVenueIds)
-          ? token.adminVenueIds
-          : [];
-      }
-      return session;
+      return applyAdminSessionFromToken(session, token);
     },
   },
 });

@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { signInWithGoogle } from "@/lib/auth/actions";
+import { signInWithGoogle, signOutUser } from "@/lib/auth/actions";
 import { callbackPath } from "@/lib/auth/callback-path";
+import { sessionCanAccessCallback } from "@/lib/auth/session-from-token";
 import { auth } from "@/lib/auth/config";
 
 export const metadata: Metadata = {
@@ -30,9 +31,18 @@ export default async function SignInPage({
   const host = headerList.get("x-forwarded-host") ?? headerList.get("host");
   const callbackUrl = callbackPath(params.callbackUrl, host);
   const session = await auth();
-  if (session?.user) redirect(callbackUrl);
+  if (session?.user && sessionCanAccessCallback(session, callbackUrl)) {
+    redirect(callbackUrl);
+  }
 
-  const error = params.error ? (ERRORS[params.error] ?? "No se pudo iniciar sesión.") : null;
+  const adminDenied =
+    session?.user && !sessionCanAccessCallback(session, callbackUrl) && callbackUrl.startsWith("/admin");
+
+  const error = params.error
+    ? (ERRORS[params.error] ?? "No se pudo iniciar sesión.")
+    : adminDenied
+      ? "Tu cuenta no tiene permisos de administrador. Revisa AdminUsers o ALLOWED_ADMIN_EMAILS en el entorno, cierra sesión y vuelve a entrar."
+      : null;
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-col gap-6 px-6 py-16">
@@ -47,10 +57,18 @@ export default async function SignInPage({
           {error}
         </p>
       ) : null}
-      <form action={signInWithGoogle} className="flex flex-col gap-3">
-        <input type="hidden" name="callbackUrl" value={callbackUrl} />
-        <Button type="submit">Entrar con Google</Button>
-      </form>
+      {session?.user && adminDenied ? (
+        <form action={signOutUser} className="flex flex-col gap-3">
+          <Button type="submit" variant="outline">
+            Cerrar sesión e intentar con otra cuenta
+          </Button>
+        </form>
+      ) : (
+        <form action={signInWithGoogle} className="flex flex-col gap-3">
+          <input type="hidden" name="callbackUrl" value={callbackUrl} />
+          <Button type="submit">{session?.user ? "Reautorizar con Google" : "Entrar con Google"}</Button>
+        </form>
+      )}
     </main>
   );
 }
