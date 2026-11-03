@@ -47,10 +47,10 @@ export default function HomePage() {
             WhatsApp.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <Button asChild size="lg">
+            <Button asChild>
               <Link href="/partidos">Ver partidos abiertos</Link>
             </Button>
-            <Button asChild variant="outline" size="lg">
+            <Button asChild variant="outline">
               <Link href="/canchas">Explorar canchas</Link>
             </Button>
           </div>

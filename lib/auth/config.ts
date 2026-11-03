@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 import { revalidateTag } from "next/cache";
+import { authConfig } from "@/lib/auth/auth.config";
 import { sealSecret } from "@/lib/crypto/seal";
 import { resolveAdmin } from "@/lib/auth/resolve-admin";
 import { isE2eMockEnabled } from "@/lib/e2e/env";
@@ -36,20 +37,10 @@ const e2eProvider = Credentials({
 });
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  trustHost: true,
+  ...authConfig,
   providers: isE2eMockEnabled() ? [Google, e2eProvider] : [Google, googleCalendar],
-  session: { strategy: "jwt" },
-  pages: {
-    signIn: "/auth/signin",
-    error: "/auth/signin",
-  },
   callbacks: {
-    authorized({ auth: session, request }) {
-      const { pathname } = request.nextUrl;
-      if (pathname.startsWith("/admin")) return Boolean(session?.user?.isAdmin);
-      if (pathname.startsWith("/cuenta")) return Boolean(session?.user);
-      return true;
-    },
+    ...authConfig.callbacks,
     async jwt({ token, user, account }) {
       const email = user?.email ?? (typeof token.email === "string" ? token.email : undefined);
       if (email) {
