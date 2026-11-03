@@ -2,6 +2,7 @@ import { listCourts } from "@/lib/sheets/repos/courts";
 import { listMatches } from "@/lib/sheets/repos/matches";
 import { listVenues } from "@/lib/sheets/repos/venues";
 import type { Court, Match, Venue } from "@/lib/sheets/schemas";
+import { pricePerPlayerCLP } from "@/lib/pricing";
 import type { Sport } from "@/lib/time";
 
 export type CourtView = Court & {
@@ -15,6 +16,7 @@ export type MatchView = Match & {
   venueId: string;
   venueName: string;
   venueAddress: string;
+  courtTotalPriceCLP: number;
   priceCLP: number;
   photoUrl: string;
 };
@@ -72,7 +74,8 @@ function toMatchView(
     venueId: court.venueId,
     venueName: venue?.name ?? "Complejo sin nombre",
     venueAddress: venue?.address ?? "",
-    priceCLP: court.priceCLP,
+    courtTotalPriceCLP: court.priceCLP,
+    priceCLP: pricePerPlayerCLP(court.priceCLP, match.maxPlayers),
     photoUrl: court.photoUrl,
   };
 }

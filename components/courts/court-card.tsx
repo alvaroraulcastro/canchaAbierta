@@ -3,11 +3,13 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { CourtView } from "@/lib/catalog";
 import { formatCLP, sportLabel } from "@/lib/format";
+import { pricePerPlayerCLP } from "@/lib/pricing";
 import { courtHref } from "@/lib/routes";
 
 function safePhoto(url: string): string | undefined {
   if (!/^https?:\/\//.test(url)) return undefined;
   if (/["'()]/.test(url)) return undefined;
+  if (/ejemplo\.cl/i.test(url)) return undefined;
   return url;
 }
 
@@ -37,9 +39,9 @@ export function CourtCard({ court }: { court: CourtView }) {
         <p className="text-sm text-muted">{court.venueName}</p>
       </CardHeader>
       <CardContent className="pt-3">
-        <p className="text-sm">{formatCLP(court.priceCLP)} por jugador</p>
-        <p className="mt-1 text-sm text-muted">
-          {court.capacity} jugadores
+        <p className="text-sm">
+          {formatCLP(court.priceCLP)} arriendo ·{" "}
+          {formatCLP(pricePerPlayerCLP(court.priceCLP, court.capacity))} c/u (ref. {court.capacity})
         </p>
       </CardContent>
     </Card>
