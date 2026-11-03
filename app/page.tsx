@@ -2,9 +2,24 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
+const steps = [
+  {
+    title: "Elige tu partido",
+    body: "Filtra por deporte, fecha y complejo. Ves cupos y precio al instante.",
+  },
+  {
+    title: "Inscríbete en minutos",
+    body: "Entra con Google, completa tu perfil y paga en línea de forma segura.",
+  },
+  {
+    title: "Llega a jugar",
+    body: "Recibe la confirmación y presenta tu QR el día del partido.",
+  },
+] as const;
+
 export default function HomePage() {
   return (
-    <main className="mx-auto flex max-w-5xl flex-col gap-8 px-6 py-12">
+    <main className="mx-auto flex max-w-5xl flex-col gap-10 px-6 py-12">
       <header className="overflow-hidden rounded-[2rem] border border-line bg-card shadow-sm">
         <div className="relative aspect-[16/9] w-full">
           <Image
@@ -22,43 +37,83 @@ export default function HomePage() {
         </div>
         <div className="px-6 py-10 sm:px-10">
           <p className="inline-flex rounded-full bg-brand-300 px-3 py-1 text-xs font-semibold tracking-wide text-brand-950 uppercase">
-            Pádel y babyfútbol
+            Chile · pádel y babyfútbol
           </p>
           <h1 className="mt-5 max-w-3xl text-4xl font-semibold tracking-tight text-balance text-ink sm:text-5xl">
-            Encuentra tu partido y suma el cupo
+            Tu próximo partido, a un clic
           </h1>
           <p className="mt-4 max-w-2xl text-lg text-muted">
-            Revisa canchas, horarios y precio. Te inscribes y pagas en línea con Flow.
+            Encuentra canchas, suma cupo con otros jugadores y confirma tu lugar sin coordinar por
+            WhatsApp.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <Button asChild>
-              <Link href="/partidos">Ver partidos</Link>
+            <Button asChild size="lg">
+              <Link href="/partidos">Ver partidos abiertos</Link>
             </Button>
-            <Button asChild variant="outline">
-              <Link href="/canchas">Ver canchas</Link>
+            <Button asChild variant="outline" size="lg">
+              <Link href="/canchas">Explorar canchas</Link>
             </Button>
           </div>
         </div>
       </header>
 
-      <section className="grid gap-4 sm:grid-cols-2">
-        <article className="rounded-3xl border border-line bg-card p-6 shadow-sm">
-          <p className="text-sm font-semibold text-brand-700">Jugadores</p>
-          <h2 className="mt-2 text-xl font-semibold">Elige un partido abierto</h2>
+      <section aria-labelledby="deportes-heading" className="grid gap-4 sm:grid-cols-2">
+        <h2 id="deportes-heading" className="sr-only">
+          Elige tu deporte
+        </h2>
+        <Link
+          href="/partidos?sport=padel"
+          className="group rounded-3xl border border-line bg-card p-6 shadow-sm transition hover:border-brand-400 hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+        >
+          <p className="text-sm font-semibold text-brand-700">Pádel</p>
+          <h3 className="mt-2 text-xl font-semibold group-hover:text-brand-900">
+            Partidos en cancha cubierta o al aire libre
+          </h3>
           <p className="mt-2 text-sm text-muted">
-            Entra con Google, completa tu perfil y reserva tu cupo en pádel o babyfútbol.
+            Horarios claros, precio por jugador y cupos en tiempo real.
           </p>
-        </article>
-        <article className="rounded-3xl border border-line bg-brand-100 p-6 shadow-sm">
-          <p className="text-sm font-semibold text-brand-800">Canchas</p>
-          <h2 className="mt-2 text-xl font-semibold">Publica y administra</h2>
+          <span className="mt-4 inline-block text-sm font-medium text-link">Ver partidos de pádel →</span>
+        </Link>
+        <Link
+          href="/partidos?sport=babyfutbol"
+          className="group rounded-3xl border border-line bg-brand-100 p-6 shadow-sm transition hover:border-brand-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+        >
+          <p className="text-sm font-semibold text-brand-800">Babyfútbol</p>
+          <h3 className="mt-2 text-xl font-semibold group-hover:text-brand-950">
+            Arma el equipo y reserva la cancha
+          </h3>
           <p className="mt-2 text-sm text-muted">
-            Crea partidos, sigue las inscripciones y aprueba el sobrecupo desde el panel.
+            Ideal para picados entre amigos o equipos que buscan reemplazo rápido.
           </p>
-        </article>
+          <span className="mt-4 inline-block text-sm font-medium text-link">
+            Ver partidos de babyfútbol →
+          </span>
+        </Link>
       </section>
 
-      <footer className="pt-4 text-sm text-muted">Pagos con Flow.cl · Horarios en hora de Chile</footer>
+      <section aria-labelledby="pasos-heading" className="rounded-3xl border border-line bg-card p-6 sm:p-8">
+        <h2 id="pasos-heading" className="text-xl font-semibold">
+          Así funciona
+        </h2>
+        <ol className="mt-6 grid gap-6 sm:grid-cols-3">
+          {steps.map((step, index) => (
+            <li key={step.title} className="flex flex-col gap-2">
+              <span
+                className="flex size-8 items-center justify-center rounded-full bg-brand-300 text-sm font-bold text-brand-950"
+                aria-hidden
+              >
+                {index + 1}
+              </span>
+              <h3 className="font-semibold">{step.title}</h3>
+              <p className="text-sm text-muted">{step.body}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <footer className="text-center text-sm text-muted sm:text-left">
+        Horarios en hora de Chile · Pagos seguros en línea
+      </footer>
     </main>
   );
 }

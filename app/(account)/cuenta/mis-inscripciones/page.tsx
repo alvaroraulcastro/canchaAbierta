@@ -105,7 +105,13 @@ export default async function MyInscriptionsPage({ searchParams }: PageProps) {
                     {statusLabel[inscription.paymentStatus] ?? inscription.paymentStatus}
                   </Badge>
                   {inscription.overbookRequested ? (
-                    <Badge variant="muted">Sobrecupo</Badge>
+                    inscription.adminApproved === true ? (
+                      <Badge variant="outline">Cupo extra confirmado</Badge>
+                    ) : inscription.adminApproved === false ? (
+                      <Badge variant="muted">Cupo extra no confirmado</Badge>
+                    ) : (
+                      <Badge variant="warning">Cupo extra en revisión</Badge>
+                    )
                   ) : null}
                 </div>
                 {match ? (
