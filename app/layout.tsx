@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
+import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
 
@@ -35,6 +36,7 @@ export default function RootLayout({
         <div id="main-content" className="flex-1">
           {children}
         </div>
+        <SiteFooter />
       </body>
     </html>
   );

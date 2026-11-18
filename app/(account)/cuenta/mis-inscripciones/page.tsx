@@ -1,5 +1,4 @@
 import { CancelInscriptionForm } from "@/components/inscriptions/cancel-inscription-form";
-import { InscriptionCheckInQr } from "@/components/inscriptions/inscription-check-in-qr";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -47,7 +46,7 @@ export default async function MyInscriptionsPage({ searchParams }: PageProps) {
   );
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-6 py-10">
+    <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-10 sm:px-6">
       <p className="text-sm">
         <Link href="/cuenta" className="text-link hover:underline">
           Tu cuenta
@@ -120,9 +119,6 @@ export default async function MyInscriptionsPage({ searchParams }: PageProps) {
                   </p>
                 ) : null}
                 <p className="mt-2 text-sm">{formatCLP(inscription.amountCLP)}</p>
-                {inscription.checkedInAt ? (
-                  <p className="mt-2 text-sm text-brand-800">Ingreso registrado</p>
-                ) : null}
                 {match ? (
                   <Link
                     href={matchHref(match.id)}
@@ -137,7 +133,11 @@ export default async function MyInscriptionsPage({ searchParams }: PageProps) {
                 {cancelPolicy && !cancelPolicy.ok ? (
                   <p className="mt-3 text-sm text-muted">{cancelPolicy.error}</p>
                 ) : null}
-                <InscriptionCheckInQr inscriptionId={inscription.id} />
+                {inscription.paymentStatus === "paid" ? (
+                  <p className="mt-3 text-sm text-muted">
+                    Llega al complejo a la hora indicada; no necesitas mostrar un código en la entrada.
+                  </p>
+                ) : null}
               </li>
             );
           })}

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { decideOverbook, markAttendance } from "@/lib/actions/admin/inscriptions";
+import { decideOverbook } from "@/lib/actions/admin/inscriptions";
 import { getMatchView } from "@/lib/catalog";
 import { listInscriptionsByMatch } from "@/lib/sheets/repos/inscriptions";
 import { paymentStatusLabel } from "@/lib/format";
@@ -56,7 +56,6 @@ export default async function AdminMatchInscriptionsPage({ params, searchParams 
                   {row.overbookRequested ? " · sobrecupo" : ""}
                   {row.adminApproved === true ? " · aprobado" : ""}
                   {row.adminApproved === false ? " · rechazado" : ""}
-                  {row.checkedInAt ? " · ingresó" : ""}
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -75,15 +74,6 @@ export default async function AdminMatchInscriptionsPage({ params, searchParams 
                       <Button type="submit" variant="outline" size="sm">Rechazar</Button>
                     </form>
                   </>
-                ) : null}
-                {row.paymentStatus === "paid" ? (
-                  <form action={markAttendance}>
-                    <input type="hidden" name="inscriptionId" value={row.id} />
-                    <input type="hidden" name="matchId" value={id} />
-                    <Button type="submit" variant="ghost" size="sm">
-                      Registrar asistencia
-                    </Button>
-                  </form>
                 ) : null}
               </div>
             </li>

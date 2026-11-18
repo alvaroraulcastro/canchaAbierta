@@ -77,11 +77,6 @@ export default async function AdminReportesPage({ searchParams }: PageProps) {
           <p className="text-sm text-muted">{dashboard.paidCount} inscripciones</p>
         </article>
         <article className="rounded-2xl border border-line bg-card p-4">
-          <p className="text-sm text-muted">Check-ins</p>
-          <p className="mt-1 text-2xl font-semibold tabular-nums">{dashboard.checkedInCount}</p>
-          <p className="text-sm text-muted">de {dashboard.paidCount} pagadas</p>
-        </article>
-        <article className="rounded-2xl border border-line bg-card p-4">
           <p className="text-sm text-muted">Cancelaciones</p>
           <p className="mt-1 text-2xl font-semibold tabular-nums">{dashboard.cancelledCount}</p>
         </article>

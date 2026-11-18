@@ -202,29 +202,6 @@ export async function cancelInscriptionByPlayer(
   return { matchId, wasPaid: true };
 }
 
-export async function markInscriptionCheckedIn(input: {
-  inscriptionId: string;
-  adminEmail: string;
-}): Promise<{ matchId: string; alreadyCheckedIn: boolean } | null> {
-  const row = await findSheetRowByColumn("Inscripciones", "id", input.inscriptionId);
-  if (!row) return null;
-  const status = paymentStatusFromCell(cellText(row, "paymentStatus"));
-  if (status !== "paid") return null;
-  const matchId = cellText(row, "matchId");
-  if (!matchId) return null;
-  const existing = cellText(row, "checkedInAt");
-  if (existing) {
-    return { matchId, alreadyCheckedIn: true };
-  }
-  const now = new Date().toISOString();
-  await updateSheetRow("Inscripciones", row.rowNumber, row.headers, {
-    checkedInAt: now,
-    checkedInBy: input.adminEmail.trim().toLowerCase(),
-    updatedAt: now,
-  });
-  return { matchId, alreadyCheckedIn: false };
-}
-
 export async function setInscriptionCalendarEventId(
   inscriptionId: string,
   calendarEventId: string,
