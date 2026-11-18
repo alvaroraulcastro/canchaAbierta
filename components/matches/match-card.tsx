@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { SpotsMeter } from "@/components/matches/spots-meter";
 import type { MatchView } from "@/lib/catalog";
 import { formatCLP, matchStatusLabel, spotsLabel, sportLabel } from "@/lib/format";
 import { matchHref } from "@/lib/routes";
@@ -8,8 +10,10 @@ import { formatShortDate } from "@/lib/time";
 
 export function MatchCard({ match }: { match: MatchView }) {
   const full = match.currentPlayers >= match.maxPlayers;
+  const open = match.status === "open";
+
   return (
-    <Card>
+    <Card className="flex h-full flex-col">
       <CardHeader>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
@@ -23,21 +27,27 @@ export function MatchCard({ match }: { match: MatchView }) {
             </CardTitle>
             <p className="text-sm text-muted">{match.venueName}</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap justify-end gap-2">
             <Badge>{sportLabel(match.sport)}</Badge>
-            <Badge variant={match.status === "open" ? "outline" : "muted"}>
-              {matchStatusLabel(match.status)}
-            </Badge>
+            <Badge variant={open ? "outline" : "muted"}>{matchStatusLabel(match.status)}</Badge>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="grid gap-1 pt-3 text-sm">
-        <p>{formatShortDate(match.dateTime)}</p>
+      <CardContent className="flex flex-1 flex-col gap-1 pt-3 text-sm">
+        <p className="font-medium">{formatShortDate(match.dateTime)}</p>
         <p>{spotsLabel(match.currentPlayers, match.maxPlayers)}</p>
-        <p className="font-medium tabular-nums">{formatCLP(match.priceCLP)} por jugador</p>
-        {full && match.allowOverbook ? <Badge variant="warning">Cupo extra</Badge> : null}
-        {full && !match.allowOverbook ? <Badge variant="muted">Completo</Badge> : null}
+        <SpotsMeter current={match.currentPlayers} max={match.maxPlayers} />
+        <p className="mt-2 text-base font-semibold tabular-nums">{formatCLP(match.priceCLP)} por jugador</p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {full && match.allowOverbook ? <Badge variant="warning">Cupo extra</Badge> : null}
+          {full && !match.allowOverbook ? <Badge variant="muted">Completo</Badge> : null}
+        </div>
       </CardContent>
+      <CardFooter className="border-t border-line pt-0">
+        <Button asChild variant={open && !full ? "default" : "outline"} className="w-full sm:w-auto">
+          <Link href={matchHref(match.id)}>{open ? "Ver partido e inscribirme" : "Ver detalle"}</Link>
+        </Button>
+      </CardFooter>
     </Card>
   );
 }

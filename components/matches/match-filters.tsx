@@ -1,11 +1,13 @@
+import { FilterPanel } from "@/components/layout/filter-panel";
 import { Button } from "@/components/ui/button";
 import type { MatchesFilters } from "@/lib/search-params";
 
 export function MatchFilters({ filters }: { filters: MatchesFilters }) {
   return (
+    <FilterPanel title="Filtrar partidos">
     <form
       method="get"
-      className="flex flex-col gap-3 sm:flex-row sm:items-end"
+      className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end"
       aria-label="Filtrar partidos"
     >
       <label className="flex flex-col gap-1 text-sm">
@@ -31,7 +33,10 @@ export function MatchFilters({ filters }: { filters: MatchesFilters }) {
           <option value="todos">Todos</option>
         </select>
       </label>
-      <Button type="submit">Filtrar</Button>
+      <Button type="submit" className="w-full sm:w-auto">
+        Aplicar filtros
+      </Button>
     </form>
+    </FilterPanel>
   );
 }

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { notFound } from "next/navigation";
 import { InscribirseForm } from "@/components/inscriptions/inscribirse-form";
 import { SheetsNotice } from "@/components/sheets-notice";
@@ -66,12 +67,8 @@ export default async function MatchPage({
         : null;
 
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-6 py-10">
-      <p className="text-sm">
-        <Link href="/partidos" className="text-link hover:underline">
-          Partidos
-        </Link>
-      </p>
+    <main className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-10 sm:px-6">
+      <Breadcrumb href="/partidos" label="Partidos" />
       <header className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-3xl font-semibold tracking-tight">{match.courtName}</h1>

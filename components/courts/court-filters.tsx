@@ -1,12 +1,14 @@
+import { FilterPanel } from "@/components/layout/filter-panel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { CourtsFilters } from "@/lib/search-params";
 
 export function CourtFilters({ filters }: { filters: CourtsFilters }) {
   return (
+    <FilterPanel title="Filtrar canchas">
     <form
       method="get"
-      className="flex flex-col gap-3 sm:flex-row sm:items-end"
+      className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end"
       aria-label="Filtrar canchas"
     >
       <label className="flex flex-1 flex-col gap-1 text-sm">
@@ -25,7 +27,10 @@ export function CourtFilters({ filters }: { filters: CourtsFilters }) {
           <option value="babyfutbol">Babyfútbol</option>
         </select>
       </label>
-      <Button type="submit">Filtrar</Button>
+      <Button type="submit" className="w-full sm:w-auto">
+        Aplicar filtros
+      </Button>
     </form>
+    </FilterPanel>
   );
 }

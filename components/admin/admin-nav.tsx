@@ -6,7 +6,6 @@ const links = [
   { href: "/admin", label: "Resumen", permission: null },
   { href: "/admin/canchas", label: "Canchas", permission: "courts_write" as const },
   { href: "/admin/partidos", label: "Partidos", permission: "matches_write" as const },
-  { href: "/admin/check-in", label: "Check-in QR", permission: "check_in" as const },
   { href: "/admin/reportes", label: "Reportes", permission: "reports" as const },
   { href: "/admin/jugadores", label: "Jugadores", permission: "reports" as const },
   { href: "/admin/auditoria", label: "Auditoría", permission: "audit_read" as const },

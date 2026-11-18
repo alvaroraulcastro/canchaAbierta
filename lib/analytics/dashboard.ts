@@ -19,7 +19,6 @@ export type AnalyticsDashboard = {
   paidRevenueCLP: number;
   cancelledCount: number;
   pendingOverbookCount: number;
-  checkedInCount: number;
   averageFillRate: number;
   byPaymentStatus: Record<string, number>;
 };
@@ -61,7 +60,6 @@ async function computeDashboard(
   let paidRevenueCLP = 0;
   let cancelledCount = 0;
   let pendingOverbookCount = 0;
-  let checkedInCount = 0;
   const byPaymentStatus: Record<string, number> = {};
 
   for (const row of scoped) {
@@ -69,7 +67,6 @@ async function computeDashboard(
     if (row.paymentStatus === "paid") {
       paidCount += 1;
       paidRevenueCLP += row.amountCLP;
-      if (row.checkedInAt) checkedInCount += 1;
       if (row.overbookRequested && row.adminApproved === null) pendingOverbookCount += 1;
     }
     if (row.paymentStatus === "cancelled") cancelledCount += 1;
@@ -95,7 +92,6 @@ async function computeDashboard(
     paidRevenueCLP,
     cancelledCount,
     pendingOverbookCount,
-    checkedInCount,
     averageFillRate,
     byPaymentStatus,
   };

@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth/config";
 import { Button } from "@/components/ui/button";
 
 const navLinkClass =
-  "rounded-full px-3 py-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-surface";
+  "inline-flex min-h-10 items-center rounded-full px-3.5 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-surface";
 
 export async function AuthMenu() {
   const session = await auth();

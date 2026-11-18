@@ -97,21 +97,6 @@ export function parseAdminCourtsSearchParams(params: SearchParams): AdminCourtsS
   };
 }
 
-const attendanceSchema = z.object({
-  inscriptionId: z.string().trim().min(1),
-  matchId: z.string().trim().min(1),
-});
-
-export type AttendanceFormData = z.infer<typeof attendanceSchema>;
-
-export function parseAttendanceFormData(formData: FormData): AttendanceFormData | null {
-  const parsed = attendanceSchema.safeParse({
-    inscriptionId: formData.get("inscriptionId"),
-    matchId: formData.get("matchId"),
-  });
-  return parsed.success ? parsed.data : null;
-}
-
 export type InscriptionsSearchParams = {
   showPendingNotice: boolean;
   showCancelledNotice: boolean;

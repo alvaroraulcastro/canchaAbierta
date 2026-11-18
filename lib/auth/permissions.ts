@@ -6,7 +6,6 @@ export type AdminPermission =
   | "courts_write"
   | "matches_write"
   | "overbook_decide"
-  | "check_in"
   | "reports"
   | "audit_read";
 
@@ -16,7 +15,6 @@ const MATRIX: Record<AdminRole, ReadonlySet<AdminPermission>> = {
     "courts_write",
     "matches_write",
     "overbook_decide",
-    "check_in",
     "reports",
     "audit_read",
   ]),
@@ -24,10 +22,9 @@ const MATRIX: Record<AdminRole, ReadonlySet<AdminPermission>> = {
     "courts_write",
     "matches_write",
     "overbook_decide",
-    "check_in",
     "reports",
   ]),
-  support: new Set(["check_in", "reports"]),
+  support: new Set(["reports"]),
 };
 
 export function hasAdminPermission(admin: ResolvedAdmin, permission: AdminPermission): boolean {

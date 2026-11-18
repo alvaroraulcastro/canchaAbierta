@@ -13,7 +13,7 @@ const steps = [
   },
   {
     title: "Llega a jugar",
-    body: "Recibe la confirmación y presenta tu QR el día del partido.",
+    body: "Recibe la confirmación por correo o en Mis inscripciones y llega a jugar.",
   },
 ] as const;
 
@@ -46,12 +46,15 @@ export default function HomePage() {
             Encuentra canchas, suma cupo con otros jugadores y confirma tu lugar sin coordinar por
             WhatsApp.
           </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Button asChild>
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <Button asChild size="lg" className="w-full sm:w-auto">
               <Link href="/partidos">Ver partidos abiertos</Link>
             </Button>
-            <Button asChild variant="outline">
+            <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
               <Link href="/canchas">Explorar canchas</Link>
+            </Button>
+            <Button asChild variant="ghost" size="lg" className="w-full sm:w-auto">
+              <Link href="/ayuda">Cómo funciona</Link>
             </Button>
           </div>
         </div>
@@ -111,9 +114,6 @@ export default function HomePage() {
         </ol>
       </section>
 
-      <footer className="text-center text-sm text-muted sm:text-left">
-        Horarios en hora de Chile · Pagos seguros en línea
-      </footer>
     </main>
   );
 }

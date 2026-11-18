@@ -44,7 +44,6 @@ export async function GET(request: Request) {
     `paid_count,${dashboard.paidCount}`,
     `paid_revenue_clp,${dashboard.paidRevenueCLP}`,
     `cancelled_count,${dashboard.cancelledCount}`,
-    `checked_in_count,${dashboard.checkedInCount}`,
     `average_fill_rate,${dashboard.averageFillRate.toFixed(4)}`,
     "",
     "inscription_id,match_id,player_email,status,amount_clp,checked_in_at",

@@ -60,6 +60,11 @@ body {
   height: 100%;
 }
 
+a[class*="text-link"],
+.text-link {
+  text-underline-offset: 4px;
+}
+
 body {
   touch-action: manipulation;
   background-color: var(--color-surface);
